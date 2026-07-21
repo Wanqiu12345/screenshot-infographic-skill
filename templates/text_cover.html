@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<style>
+:root{
+  --page_bg:__PAGE_BG__; --card_bg:__CARD_BG__; --accent:__ACCENT__; --accent_soft:__ACCENT_SOFT__;
+  --secondary:__SECONDARY__; --secondary_soft:__SECONDARY_SOFT__; --accent2:__ACCENT2__; --accent2_soft:__ACCENT2_SOFT__;
+  --text_main:__TEXT_MAIN__; --text_sub:__TEXT_SUB__; --line:__LINE__; --radius:__RADIUS__;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--page_bg);}
+.page{
+  width:1080px;height:1440px;padding:74px 74px 56px;
+  display:flex;flex-direction:column;background:var(--page_bg);color:var(--text_main);
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+.kicker{font-size:26px;letter-spacing:6px;text-transform:uppercase;color:var(--accent);font-weight:700;}
+.title{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',Georgia,serif;
+  font-weight:800;font-size:72px;line-height:1.18;margin-top:26px;color:var(--text_main);
+}
+.subtitle{font-size:30px;color:var(--accent);margin-top:22px;line-height:1.5;font-weight:600;}
+.hero{
+  margin-top:40px;border-radius:calc(var(--radius) + 8px);overflow:hidden;
+  background:var(--card_bg);box-shadow:0 26px 60px var(--accent_soft);
+  flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+}
+.hero img{width:100%;height:100%;object-fit:contain;display:block;}
+.summary{
+  margin-top:34px;background:var(--accent2_soft);border-left:6px solid var(--accent2);
+  border-radius:var(--radius);padding:26px 32px;font-size:28px;line-height:1.55;color:var(--text_main);
+}
+.footer{
+  margin-top:auto;padding-top:26px;display:flex;justify-content:space-between;align-items:center;
+  font-size:24px;color:var(--text_sub);border-top:1px solid var(--line);
+}
+.footer .pg{font-weight:700;color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">__KICKER__</div>
+  <div class="title">__TITLE__</div>
+  <div class="subtitle">__SUBTITLE__</div>
+  <div class="hero">__HERO__</div>
+  <div class="summary">__SUMMARY__</div>
+  __FOOTER__
+</div>
+</body>
+</html>

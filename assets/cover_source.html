@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1280px;height:640px;overflow:hidden;}
+  .stage{width:1280px;height:640px;position:relative;color:#fff;
+    background:linear-gradient(120deg,#16243f 0%,#24405f 36%,#3a6a86 58%,#eaf2f6 100%);
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;}
+  .hero{position:absolute;left:74px;top:0;width:560px;height:640px;
+    display:flex;flex-direction:column;justify-content:center;}
+  .kicker{font-size:17px;letter-spacing:5px;color:#8fd3e8;font-weight:600;margin-bottom:20px;}
+  .title{font-family:"Noto Serif SC","Songti SC",serif;font-size:66px;font-weight:800;
+    line-height:1.12;margin-bottom:8px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
+  .title-en{font-size:25px;font-weight:600;color:#cfe6f0;letter-spacing:1px;margin-bottom:26px;}
+  .tag{font-size:22px;color:#eaf3f7;line-height:1.55;max-width:480px;}
+  .tag b{color:#ffd27a;font-weight:700;}
+  .badge{position:absolute;left:74px;bottom:40px;display:flex;gap:12px;}
+  .pill{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.32);padding:8px 16px;border-radius:999px;
+    font-size:16px;color:#eaf3f7;}
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.a{background:#3fb89b;}
+  .dot.b{background:#7a5bc0;}
+  .cards{position:absolute;right:62px;top:0;width:560px;height:640px;}
+  .card{position:absolute;border-radius:18px;overflow:hidden;background:#fff;
+    box-shadow:0 22px 55px rgba(0,0,0,.38);}
+  .card1{width:300px;height:402px;right:208px;top:118px;transform:rotate(-4deg);}
+  .card2{width:300px;height:402px;right:18px;top:150px;transform:rotate(5deg);}
+  .c1bar{height:34px;background:linear-gradient(90deg,#2a8e9e,#3fb89b);}
+  .c1body{background:#f7fafb;height:368px;padding:16px;}
+  .c1win{height:118px;border-radius:8px;margin-bottom:14px;
+    background:linear-gradient(135deg,#dfe9ef,#cddde8);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .c1row{height:14px;border-radius:7px;background:#e3ebf0;margin-bottom:10px;}
+  .c1row.ac{background:#bfe3df;width:58%;}
+  .c1chip{display:inline-block;width:72px;height:42px;border-radius:8px;background:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);margin:0 9px 9px 0;}
+  .c2bar{height:34px;background:linear-gradient(90deg,#7a5bc0,#355c9e);}
+  .c2body{background:#fff;height:368px;padding:16px;}
+  .c2hero{height:150px;border-radius:8px;margin-bottom:14px;
+    background:linear-gradient(135deg,#9b7be0,#5b7fd6);}
+  .c2title{height:22px;width:82%;border-radius:6px;background:#2c2c2c;margin-bottom:11px;}
+  .c2line{height:12px;border-radius:6px;background:#eef0f2;margin-bottom:9px;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="hero">
+    <div class="kicker">跨平台 AGENT SKILL</div>
+    <div class="title">截图教程图 & 信息图<br>配图生成器</div>
+    <div class="title-en">Screenshot &amp; Text → Infographic Generator</div>
+    <div class="tag">一张<b>截图</b> 或 一段<b>文案</b><br>→ 一整套发布级配图</div>
+    <div class="badge">
+      <span class="pill"><span class="dot a"></span>截图模式</span>
+      <span class="pill"><span class="dot b"></span>纯文案模式</span>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="card card1">
+      <div class="c1bar"></div>
+      <div class="c1body">
+        <div class="c1win"></div>
+        <div class="c1row ac"></div>
+        <div class="c1row"></div>
+        <div class="c1row" style="width:74%"></div>
+        <div class="c1chip"></div><div class="c1chip"></div><div class="c1chip"></div>
+      </div>
+    </div>
+    <div class="card card2">
+      <div class="c2bar"></div>
+      <div class="c2body">
+        <div class="c2hero"></div>
+        <div class="c2title"></div>
+        <div class="c2line" style="width:90%"></div>
+        <div class="c2line" style="width:80%"></div>
+        <div class="c2line" style="width:85%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

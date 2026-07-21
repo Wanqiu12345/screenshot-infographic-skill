@@ -1,0 +1,77 @@
+{
+  "title": "济南市医保 DRG 付费流程",
+  "theme": "light",
+  "category": "医疗",
+  "brand": "济南医保图解",
+  "url": "ybj.jinan.gov.cn",
+  "cover": {
+    "kicker": "济南医保 · 政策图解",
+    "title": "济南市医保 DRG 付费流程",
+    "subtitle": "从挂号就医到医保结算，一次看懂看病怎么「打包付」",
+    "summary": "287 家医疗机构已全覆盖 · 次均住院费降 1078 元",
+    "visual_prompt": "3D rendered medical insurance card fused with a small hospital building and flowing data lines, soft teal and white, clean minimal clay render, soft studio shadow, isolated on light background, high detail"
+  },
+  "pages": [
+    {
+      "layout": "timeline",
+      "top_label": ["PAYMENT FLOW", "DRG 付费全流程"],
+      "page_title": "一次就医的 DRG 付费全流程",
+      "lead": "钱怎么付、谁来核、何时到？五步走完。",
+      "items": [
+        {"date": "第 1 步", "title": "参保人就医", "desc": "持医保卡挂号或办理住院，正常接受诊疗"},
+        {"date": "第 2 步", "title": "病案首页入组", "desc": "医院上传诊断与手术，分组器按 CHS-DRG 分到具体病组"},
+        {"date": "第 3 步", "title": "医保审核", "desc": "月度报表 + 季度报告 + 交叉稽核，核查「三合理一规范」"},
+        {"date": "第 4 步", "title": "按病组结算", "desc": "按病组定额支付；结余留用、超支分担"},
+        {"date": "第 5 步", "title": "拨付到账", "desc": "医保基金按月 / 季清算，拨付给定点医院"}
+      ],
+      "summary": "打包定价、全程监管，是 DRG 付费的核心逻辑。",
+      "visual_prompt": "3D rendered sequence of medical care steps: a hospital door, a clipboard with checklist, a gear, a coin stack, a handshake, arranged left to right, teal and white, clean clay render, soft shadow"
+    },
+    {
+      "layout": "grid_cards",
+      "top_label": ["KEY RULES", "DRG 核心规则"],
+      "page_title": "DRG 付费的 4 条核心规则",
+      "lead": "理解这四条，就看懂了医保怎么「花得明白」。",
+      "items": [
+        {"icon": "gift", "title": "按病组打包付费", "desc": "同病组同价格，不再按项目逐项累加"},
+        {"icon": "scale", "title": "同城同病同价", "desc": "35 个基层病组全市统一支付标准"},
+        {"icon": "bulb", "title": "结余留用 · 超支分担", "desc": "控费有动力，超标成本医院自己担"},
+        {"icon": "trend", "title": "引导合理诊疗", "desc": "CMI 诊疗难度从 0.69 升至 0.81"}
+      ],
+      "summary": "规则导向：让医院靠规范诊疗挣钱，而非靠多开单。",
+      "visual_prompt": "3D isometric set of icons: a wrapped gift box for bundled care, a balance scale for fairness, a glowing light bulb for incentive, a rising bar chart, teal and white, clean clay render, soft shadow"
+    },
+    {
+      "layout": "big_number",
+      "top_label": ["LESS BURDEN", "患者减负"],
+      "page_title": "患者负担实打实降了",
+      "number": "↓1078元",
+      "label": "DRG 付费医院 · 次均住院费用同比减少",
+      "desc": "打包付费倒逼合理诊疗，无效检查、过度用药明显减少；患者个人负担同步减少 534 元。",
+      "summary": "降的是费用，省的是老百姓的真金白银。",
+      "visual_prompt": "3D rendered giant downward arrow made of coins with a medical cross, teal and white, clean clay render, soft studio shadow, isolated on light background"
+    },
+    {
+      "layout": "metrics",
+      "top_label": ["THE RESULTS", "改革成效"],
+      "page_title": "济南 DRG 改革成效三笔账",
+      "lead": "覆盖更广、费用更省、账目更清。",
+      "metrics": [
+        {"value": "287家", "name": "DRG 付费全覆盖机构", "desc": "三级 38 / 二级 68 / 一级及以下 181"},
+        {"value": "↓1078元", "name": "次均住院费用降幅", "desc": "DRG 付费医院同比减少"},
+        {"value": "↓534元", "name": "患者个人负担减少", "desc": "DRG 付费医院同比减少"}
+      ],
+      "summary": "数据来源：济南市医保局 2024 年新闻发布会。",
+      "visual_prompt": "3D rendered bar chart rising upward with a shield and small people figures, teal and white, clean clay render, soft shadow"
+    },
+    {
+      "layout": "summary",
+      "top_label": ["FOR YOU", "对参保人意味着什么"],
+      "page_title": "看懂 DRG，看病更安心",
+      "statement": "DRG 不是少报销，而是把医保钱花在刀刃上——该治的治，不该花的省下来，最终惠及每一位参保人。",
+      "cta": "看懂 DRG，看病更安心",
+      "tags": ["济南医保", "DRG付费", "看病更省钱"],
+      "visual_prompt": "3D rendered shield protecting a small family of figures with a medical cross, teal and white, clean clay render, soft shadow, warm friendly"
+    }
+  ]
+}

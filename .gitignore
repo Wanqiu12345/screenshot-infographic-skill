@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# 运行生成的中间文件（run_screenshot_tutorial.py 产生，按需清理）
+# 注意：不要写成 *.html / *.json / *.png 通配，否则会误伤 templates/*.html 等核心源码
+output/
+output_text/
+theme.json
+config*.json
+crop_*.png
+*_filled.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 示例图默认不进仓库；如需在 README 中展示预览图，把上面的忽略规则去掉即可。
+# 当前已放开：examples/*.png 随仓库提交，供 GitHub 预览。

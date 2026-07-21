@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+:root{
+  --page-bg: __PAGE_BG__;
+  --card-bg: __CARD_BG__;
+  --accent: __ACCENT__;
+  --accent-soft: __ACCENT_SOFT__;
+  --secondary: __SECONDARY__;
+  --accent2: __ACCENT2__;
+  --accent2-soft: __ACCENT2_SOFT__;
+  --text-main: __TEXT_MAIN__;
+  --text-sub: __TEXT_SUB__;
+  --line: __LINE__;
+  --radius: __RADIUS__px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--page-bg);}
+.page{
+  width:1080px;height:1440px;background:var(--page-bg);
+  padding:56px 50px 40px;
+  font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--text-main);display:flex;flex-direction:column;
+}
+.kicker{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.kicker .tag{font-size:19px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:999px;padding:8px 20px;box-shadow:0 6px 16px var(--accent-soft);}
+.kicker .step{font-size:19px;color:var(--text-sub);font-weight:600;}
+h1{font-size:48px;font-weight:800;line-height:1.15;margin-bottom:14px;}
+.lead{font-size:22px;line-height:1.55;color:var(--text-sub);margin-bottom:32px;}
+.figure{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius);
+  min-height:240px;max-height:480px;padding:20px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;margin-bottom:28px;box-shadow:0 6px 28px rgba(0,0,0,0.04);}
+.figure img{max-width:100%;max-height:440px;height:auto;border-radius:calc(var(--radius) * 0.7);
+  display:block;}
+.marker{position:absolute;border:4px solid var(--accent);border-radius:50%;
+  transform:translate(-50%,-50%);box-shadow:0 0 0 6px var(--accent-soft), 0 0 0 12px rgba(255,255,255,0.35);pointer-events:none;}
+.marker::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%);}
+.steps-head{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.steps-head i{flex:1;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;}
+.steps-head h2{font-size:22px;font-weight:700;color:var(--text-main);}
+.steps{display:flex;flex-direction:column;gap:18px;margin-bottom:18px;}
+.step-row{display:flex;align-items:flex-start;gap:18px;background:var(--card-bg);
+  border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;}
+.sn{width:42px;height:42px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+  font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-row .stx{flex:1;padding-top:2px;}
+.step-row h3{font-size:24px;font-weight:700;margin-bottom:6px;}
+.step-row p{font-size:19px;line-height:1.55;color:var(--text-sub);}
+.value{background:var(--accent2-soft);border:1px solid var(--line);border-left:4px solid var(--accent2);
+  border-radius:var(--radius);padding:22px 24px;margin-bottom:18px;}
+.value h4{font-size:20px;font-weight:700;color:var(--accent2);margin-bottom:8px;}
+.value p{font-size:19px;line-height:1.6;color:var(--text-sub);}
+.tip{background:var(--accent2-soft);border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:var(--radius);
+  padding:20px 24px;display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;}
+.tip-icon{width:36px;height:36px;border-radius:50%;background:var(--accent2);color:#fff;
+  font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tip-txt{flex:1;}
+.tip-txt h4{font-size:20px;font-weight:700;color:var(--accent2);margin-bottom:5px;}
+.tip-txt p{font-size:18px;line-height:1.55;color:var(--text-sub);}
+.footer{display:flex;align-items:center;justify-content:center;gap:14px;
+  font-size:18px;color:var(--text-sub);padding-top:4px;}
+.footer .pg{color:var(--accent);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">
+    <span class="tag">__TAG__</span>
+    <span class="step">__PAGEINFO__</span>
+  </div>
+  <h1>__TITLE__</h1>
+  <div class="lead">__LEAD__</div>
+
+  <div class="figure">
+    <img src="__CROP__" alt="feature detail">
+    __MARKER__
+  </div>
+
+  <div class="steps-head"><i></i><h2>操作步骤</h2><i></i></div>
+  <div class="steps">__STEPS__</div>
+
+  __VALUE__
+  __TIP__
+
+  __FOOTER__
+</div>
+</body>
+</html>
