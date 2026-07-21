@@ -36,6 +36,14 @@ MAX_RETRY = 2
 # 优先级：显式参数 > 环境变量 AGNES_API_KEY > 此兜底。
 FALLBACK_API_KEY = "sk-Vloi42yn2SLHdv3mhRf7ar53WphOlS3Vrf2NrS0F9bOInScJ"
 
+# ⚠️ 免费生图模型（Agnes）渲染文字必然乱码。所有生图提示词强制追加「不要文字」约束，
+# 从源头避免模型去画字/字母/符号/标语。无论用户 visual_prompt 写什么，都不会出现文字。
+NO_TEXT_SUFFIX = (
+    " --no text, no letters, no words, no numbers, no symbols, no typography, "
+    "no labels, pure visual 3D illustration only. "
+    "画面中严禁出现任何文字、字母、数字、符号或标语，仅用图形与色彩表达。"
+)
+
 
 def get_api_key(explicit=None):
     key = explicit or os.environ.get("AGNES_API_KEY") or FALLBACK_API_KEY
@@ -103,7 +111,9 @@ def generate_image(prompt, size="768x1024", model="agnes-image-2.1-flash",
     """
     api_key = get_api_key(api_key)
     timeout = timeout or TIMEOUT
-    payload = {"model": model, "prompt": prompt, "size": size, "n": 1}
+    # 强制追加「不要文字」约束，避免免费模型把文字渲染成乱码
+    full_prompt = (prompt or "") + NO_TEXT_SUFFIX
+    payload = {"model": model, "prompt": full_prompt, "size": size, "n": 1}
     if image_urls:
         payload["extra_body"] = {"image": list(image_urls), "response_format": "url"}
 

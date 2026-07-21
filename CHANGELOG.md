@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.5 (2026-07-21)
+
+### 改进：生图禁用文字，避免免费模型乱码
+- **背景**：Agnes 免费生图模型渲染文字必然乱码（字母/数字/符号显示为无意义笔画）。
+- `scripts/agnes_image.py`：新增常量 `NO_TEXT_SUFFIX`，在 `generate_image` 中**自动追加**到每一条生图 prompt（`--no text, no letters... 画面中严禁出现任何文字...`）。从此无论 `visual_prompt` 写什么，模型都不会去画字。
+- `references/text_mode_design.md`：`visual_prompt` 字段说明补「不要要求文字」提示。
+
 ## 1.2.3 (2026-07-21)
 
 ### 开源发布前最后收口
