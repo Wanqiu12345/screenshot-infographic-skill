@@ -49,6 +49,58 @@ def slug(s, n=14):
     return s[:n] or "page"
 
 
+def _distill_main(brand):
+    """品牌名拆主标题：优先按 '.' / '·' / ' ' 在首个分隔符处断开，保留完整品牌不缩写。"""
+    if not brand:
+        return ""
+    for sep in (".", "·", " "):
+        if sep in brand:
+            return brand.split(sep, 1)[0].strip()
+    return brand.strip()
+
+
+def _distill_sub(brand):
+    if not brand:
+        return ""
+    for sep in (".", "·", " "):
+        if sep in brand:
+            return brand.split(sep, 1)[1].strip()
+    return ""
+
+
+def _short_line(s, n=12):
+    """取前 n 字以内的短句；优先在标点/空格处截断，避免把词劈成两半。"""
+    s = (s or "").strip().replace("\n", " ")
+    if len(s) <= n:
+        return s
+    # 优先在 n 之前最近的一个中文标点截断
+    for i in range(min(n, len(s) - 1), max(0, n // 2 - 1), -1):
+        if s[i] in "，,。！？、；：,!?;:\n\r":
+            return s[:i + 1]
+    # 其次找空格
+    cut = s[:n + 1]
+    sp = cut.rfind(" ")
+    if sp > n // 3:
+        return cut[:sp]
+    # 兜底硬截断
+    return s[:n - 1] + "…"
+
+
+def _derive_series(cfg):
+    cat = cfg.get("category", "") or ""
+    if any(k in cat for k in ("医疗", "健康", "养生")):
+        return "健康知识小科普"
+    if any(k in cat for k in ("AI", "科技", "人工智能", "数码")):
+        return "AI 工具实测"
+    if any(k in cat for k in ("美食", "餐饮", "烘焙")):
+        return "美食探店笔记"
+    if any(k in cat for k in ("教育", "学习", "知识")):
+        return "知识分享"
+    if any(k in cat for k in ("财经", "金融", "投资")):
+        return "财经干货分享"
+    return "干货分享"
+
+
 def build_and_render(cfg_json, html_path, png_path):
     subprocess.run([PY, TPL_BUILD, cfg_json, html_path], check=True)
     subprocess.run([PY, RENDER, html_path, png_path], check=True)
@@ -111,8 +163,26 @@ def main():
                     time.sleep(8)
 
     # ============ 阶段2：渲染（此时资产应已齐全；仍缺失则占位）============
-    # 封面
+    # 极简传播封面（独立一张，不编号，放在最前；纯文案模式主视觉 3D 图作图标）
     cover_img = os.path.join(assets, "cover.png") if is_valid(os.path.join(assets, "cover.png")) else None
+    series = cfg.get("series") or cover.get("kicker") or _derive_series(cfg)
+    min_cover_cfg = {
+        "type": "cover", "palette": palette, "radius": radius,
+        "series": series,
+        "icon_image": cover_img,                # 无图时 build_cover 自动降级为文字 logo
+        "icon_text": (brand[:1] if brand else "·"),
+        "brand_main": cover.get("brand_main") or _distill_main(brand),
+        "brand_sub": cover.get("brand_sub") or _distill_sub(brand),
+        "slogan": cover.get("slogan") or _short_line(cover.get("subtitle") or cfg.get("title", "")),
+        "desc": cover.get("desc") or _short_line(cover.get("summary", ""), 20),
+        "watermark": brand,
+    }
+    jc = os.path.join(base, "_mincover.json")
+    json.dump(min_cover_cfg, open(jc, "w", encoding="utf-8"), ensure_ascii=False)
+    build_and_render(jc, os.path.join(base, "_mincover.html"),
+                     os.path.join(base, "00_cover.png"))
+
+    # 原「丰富封面」顺延为第 1 张内容页（01_cover.png）
     cov_cfg = {
         "type": "text_cover", "palette": palette, "radius": radius,
         "cover": cover, "title": cfg.get("title", cover.get("title", "")),
@@ -140,7 +210,7 @@ def main():
         build_and_render(j, os.path.join(base, f"_page{i}.html"),
                          os.path.join(base, f"{i + 1:02d}_{slug(pg.get('page_title', pg.get('layout', 'page')))}.png"))
 
-    print(f"[完成] 共 {total} 张，输出目录：{base}")
+    print(f"[完成] 极简封面 00_cover.png + 丰富封面与内容页共 {total} 张，输出目录：{base}")
 
 
 if __name__ == "__main__":

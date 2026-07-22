@@ -104,8 +104,14 @@
 ## 6. 输出
 
 - 默认输出到 `--out` 目录（默认 `output_text/`）。
-- 命名：`01_cover.png`, `02_<slug>.png`, `03_<slug>.png`, ...
-- 同时保留 `_cover.json`, `_page*.json`, `_cover.html`, `_page*.html` 与 `assets/` 图片，方便二次修改。
+- 命名：`00_cover.png`（极简传播封面，独立一张不编号）、`01_cover.png`（丰富封面）、`02_<slug>.png`, `03_<slug>.png`, ...
+- 同时保留 `_mincover.json`, `_cover.json`, `_page*.json`, `_mincover.html`, `_cover.html`, `_page*.html` 与 `assets/` 图片，方便二次修改。
+
+### 极简传播封面（`00_cover.png`）
+- 由 `templates/cover.html` 渲染，专供小红书/公众号信息流直发，结构极简：栏目小字 + 大图标 + 超大品牌名 + ≤12 字 slogan + 可选说明。
+- 图标默认复用 `assets/cover.png`（文生图 3D 主视觉）放入圆角方块框；无图时自动降级为「首字渐变圆角方块」文字 logo。
+- `cover` 字段可额外提供 `brand_main` / `brand_sub` / `slogan` / `desc` 覆盖自动蒸馏结果（品牌名按 `.`/`·`/空格 拆主副标题；slogan 取 `subtitle` 前 12 字）。
+- 顶层 `series` 字段可指定栏目名；缺省时由脚本按 `category` 推导（医疗→健康知识小科普、AI/科技→AI 工具实测 等）。
 
 ## 7. 推荐用法
 

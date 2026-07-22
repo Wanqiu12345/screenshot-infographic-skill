@@ -58,10 +58,17 @@
 
 **① 截图模式** —— 下面这套基于「世界是一片荒原.AI 思维导图」的真实截图生成，主色、圆角、图标全部自动跟随原图：
 
-| 第 1 张 · 总体概览 | 第 2 张 · 单个功能细节 |
+| 封面 · 独立传播用 | 第 1 张 · 总体概览 |
 |---|---|
-| ![概览图](examples/01_overview.png) | ![聊天生成细节](examples/02_chat_gen.png) |
-| ![导入文档细节](examples/03_import_doc.png) | ![导出细节](examples/05_export.png) |
+| ![封面图](examples/00_cover.png) | ![概览图](examples/01_overview.png) |
+
+| 第 2 张 · 单个功能细节 | 第 3 张 · 单个功能细节 |
+|---|---|
+| ![聊天生成细节](examples/02_chat_gen.png) | ![导入文档细节](examples/03_import_doc.png) |
+
+| 第 4 张 · 单个功能细节 |
+|---|
+| ![导出细节](examples/05_export.png) |
 
 **② 纯文案模式** —— 你只给一个主题（这里以「济南市医保 DRG 支付流程」为例），它自动结构化 + 文生图 3D 插画 + 杂志风排版，配色按主题自动推导（医疗 → 青绿）：
 
@@ -151,7 +158,7 @@ python install.py
 python run_screenshot_tutorial.py
 ```
 
-如果 `output/` 目录里出现了 `01_overview.png` 等几张图，说明安装成功 ✅。
+如果 `output/` 目录里出现了 `00_cover.png`（极简传播封面）和 `01_overview.png` 等几张图，说明安装成功 ✅。
 
 ---
 
@@ -325,9 +332,10 @@ screenshot-infographic-skill/
 │   ├── agnes_image.py            # Agnes 免费文生图封装（内置兜底密钥）
 │   └── generate_text_images.py   # 纯文案模式：并行生成 3D 插画（带自愈）
 ├── templates/
+│   ├── cover.html                # 极简传播封面模板（双模式复用）
 │   ├── overview.html             # 截图模式概览图模板
 │   ├── detail.html               # 截图模式细节图模板
-│   ├── text_cover.html           # 纯文案模式封面模板
+│   ├── text_cover.html           # 纯文案模式丰富封面模板
 │   └── text_section.html         # 纯文案模式内容页模板（8 种版式）
 ├── references/
 │   ├── design_notes.md           # 截图模式配置结构与调用链
@@ -336,6 +344,7 @@ screenshot-infographic-skill/
 │   └── text_mode_design.md       # 纯文案模式 schema 与版式规范
 └── examples/                      # 示例与输出（含本 README 预览图）
     ├── screenshot.png            # 示例截图
+    ├── 00_cover.png              # 截图模式极简封面示例
     ├── 01_overview.png …         # 截图模式示例输出
     ├── jinan_drg.json            # 纯文案模式示例配置（济南医保 DRG 主题）
     └── jinan_drg_*.png            # 纯文案模式示例输出

@@ -287,6 +287,31 @@ def build_text_cover(cfg):
     return html
 
 
+def build_cover(cfg):
+    """极简传播封面：栏目小字 + 大图标(圆角方块框) + 超大品牌名(自适应缩放) + slogan + 可选 desc。
+    封面不编号、背景跟随主题色、唯一色彩爆点=图标/品牌色，文字中性克制。
+    """
+    html = open(os.path.join(TPL, "cover.html"), encoding="utf-8").read()
+    html = common_repl(html, cfg)
+    # 图标：图片优先；否则用首字艺术字 logo（渐变圆角方块）
+    icon_path = cfg.get("icon_image")
+    if icon_path and os.path.exists(icon_path):
+        icon_html = f'<img src="{data_uri(icon_path)}">'
+    else:
+        txt = (cfg.get("icon_text") or (cfg.get("brand_main") or " ")[0]).strip() or "·"
+        icon_html = f'<span class="icon-text">{txt}</span>'
+    html = html.replace("__ICON__", icon_html)
+    html = html.replace("__KICKER__", cfg.get("series", ""))
+    html = html.replace("__BRAND_MAIN__", cfg.get("brand_main", ""))
+    sub = cfg.get("brand_sub")
+    html = html.replace("__BRAND_SUB__", f'<div class="brand-sub">{sub}</div>' if sub else "")
+    html = html.replace("__SLOGAN__", cfg.get("slogan", ""))
+    desc = cfg.get("desc")
+    html = html.replace("__DESC__", f'<div class="desc">{desc}</div>' if desc else "")
+    html = html.replace("__WATERMARK__", cfg.get("watermark", ""))
+    return html
+
+
 def build_text_section(cfg):
     html = open(os.path.join(TPL, "text_section.html"), encoding="utf-8").read()
     html = common_repl(html, cfg)
@@ -318,6 +343,8 @@ def main():
         html = build_detail(cfg)
     elif kind == "text_cover":
         html = build_text_cover(cfg)
+    elif kind == "cover":
+        html = build_cover(cfg)
     elif kind == "text_section":
         html = build_text_section(cfg)
     else:

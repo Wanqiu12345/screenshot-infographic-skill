@@ -49,6 +49,17 @@ BADGE = "功能导览"
 RADIUS = 18
 # =================================================================
 
+# ===================== 极简传播封面（独立一张，不编号）=====================
+# 设计：顶部栏目小字 + 居中大图标 + 超大品牌名 + ≤12字 slogan + 可选 desc。
+# 背景跟随主题色；品牌名过长时拆成「主标题 + 副标题」两层（保留完整品牌，不缩写）。
+# 栏目名 series 由 agent 根据用户输入推导并与用户确认；此处给默认值便于一键演示。
+COVER_SERIES = "AI 工具实测"
+COVER_BRAND_MAIN = "世界是一片荒原"
+COVER_BRAND_SUB = "AI 思维导图"
+COVER_SLOGAN = "聊天一句话，画出脑图"
+COVER_DESC = "导入文档也能变导图"
+# =================================================================
+
 # 概览卡片：把产品全部核心功能拆成 6 张小卡
 ITEMS = [
     {"num": "01", "icon": "chat", "title": "聊天输入生成", "desc": "在底部输入框描述需求，AI 自动把一句话变成完整的思维导图。"},
@@ -149,8 +160,27 @@ def main():
     favicon_path = OUT / "favicon_logo.png"
     run(SKILL / "scripts" / "extract_favicon.py", SCREENSHOT, favicon_path)
 
+    # 2.5 极简封面（独立一张，放在最前，不编号）
+    print("[2.5/6] 组装极简封面 ...")
+    favicon_ok = favicon_path.exists() and favicon_path.stat().st_size > 300
+    cover_cfg = {
+        "type": "cover",
+        "icon_image": str(favicon_path) if favicon_ok else None,
+        "icon_text": BRAND[:1],
+        "series": COVER_SERIES,
+        "brand_main": COVER_BRAND_MAIN,
+        "brand_sub": COVER_BRAND_SUB,
+        "slogan": COVER_SLOGAN,
+        "desc": COVER_DESC,
+        "palette": pal,
+        "radius": RADIUS,
+        "watermark": BRAND,
+    }
+    cover_cfg_path = OUT / "cover_config.json"
+    cover_cfg_path.write_text(json.dumps(cover_cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+
     # 3. 概览图配置
-    print("[3/5] 组装概览图 ...")
+    print("[3/6] 组装概览图 ...")
     overview_cfg = {
         "type": "overview",
         "logo_image": str(favicon_path),
@@ -194,7 +224,11 @@ def main():
         detail_cfgs.append((d["slug"], d["idx"], cfg_path))
 
     # 5. 渲染
-    print("[5/5] 渲染 PNG（无头浏览器，2× 高清）...")
+    print("[5/6] 渲染封面 PNG ...")
+    run(SKILL / "scripts" / "fill_template.py", cover_cfg_path, OUT / "cover_out.html")
+    run(SKILL / "scripts" / "render.py", OUT / "cover_out.html", OUT / "00_cover.png", 1080, 1440, 2)
+
+    print("[6/6] 渲染概览 + 细节 PNG（无头浏览器，2× 高清）...")
     run(SKILL / "scripts" / "fill_template.py", overview_cfg_path, OUT / "overview_out.html")
     run(SKILL / "scripts" / "render.py", OUT / "overview_out.html", OUT / "01_overview.png", 1080, 1440, 2)
     for slug, idx, cfg_path in detail_cfgs:
@@ -202,7 +236,7 @@ def main():
         run(SKILL / "scripts" / "render.py", OUT / f"detail_out_{slug}.html", OUT / f"{idx:02d}_{slug}.png", 1080, 1440, 2)
 
     print("\n[✓] 完成！输出在:", OUT)
-    for name in ["01_overview.png", "02_chat_gen.png", "03_import_doc.png", "04_chart_type.png", "05_export.png"]:
+    for name in ["00_cover.png", "01_overview.png", "02_chat_gen.png", "03_import_doc.png", "04_chart_type.png", "05_export.png"]:
         print("   -", name)
 
 

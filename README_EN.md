@@ -58,10 +58,17 @@ And **before generating, it confirms the plan with you** — no wrong crops, no 
 
 **① Screenshot mode** — generated from a real screenshot of "世界是一片荒原.AI 思维导图" (a mind-map product). Main color, corner radius, and icons all auto-follow the original:
 
-| Image 1 · Overview | Image 2 · Single-feature detail |
+| Cover · standalone share image | Image 1 · Overview |
 |---|---|
-| ![overview](examples/01_overview.png) | ![chat-gen detail](examples/02_chat_gen.png) |
-| ![import-doc detail](examples/03_import_doc.png) | ![export detail](examples/05_export.png) |
+| ![cover](examples/00_cover.png) | ![overview](examples/01_overview.png) |
+
+| Image 2 · Single-feature detail | Image 3 · Single-feature detail |
+|---|---|
+| ![chat-gen detail](examples/02_chat_gen.png) | ![import-doc detail](examples/03_import_doc.png) |
+
+| Image 4 · Single-feature detail |
+|---|
+| ![export detail](examples/05_export.png) |
 
 **② Plain-text mode** — give it just a topic (here, "Jinan medical insurance DRG payment flow" as an example). It auto-structures the text, generates 3D illustrations, and lays it out magazine-style; colors are derived from the topic (medical → teal/green):
 
@@ -151,7 +158,7 @@ If you installed manually, run a quick check (no screenshot needed — uses the 
 python run_screenshot_tutorial.py
 ```
 
-If `output/` now contains `01_overview.png` and a few others, install succeeded ✅.
+If `output/` now contains `00_cover.png` (minimalist share cover) and `01_overview.png` etc., install succeeded ✅.
 
 ---
 
@@ -326,9 +333,10 @@ screenshot-infographic-skill/
 │   ├── agnes_image.py            # Agnes free text-to-image wrapper (built-in fallback key)
 │   └── generate_text_images.py   # Plain-text mode: parallel 3D illustration generation (with self-healing)
 ├── templates/
+│   ├── cover.html                # Minimalist share cover template (both modes reuse)
 │   ├── overview.html             # Screenshot mode overview template
 │   ├── detail.html               # Screenshot mode detail template
-│   ├── text_cover.html           # Plain-text mode cover template
+│   ├── text_cover.html           # Plain-text mode rich cover template
 │   └── text_section.html         # Plain-text mode content-page template (8 layouts)
 ├── references/
 │   ├── design_notes.md           # Screenshot mode config structure & call chain
@@ -337,6 +345,7 @@ screenshot-infographic-skill/
 │   └── text_mode_design.md       # Plain-text mode schema & layout spec
 └── examples/                      # Examples & outputs (incl. README preview images)
     ├── screenshot.png            # Example screenshot
+    ├── 00_cover.png              # Screenshot mode minimalist cover example
     ├── 01_overview.png …         # Screenshot mode example outputs
     ├── jinan_drg.json            # Plain-text mode example config (Jinan DRG topic)
     └── jinan_drg_*.png            # Plain-text mode example outputs
