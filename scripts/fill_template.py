@@ -259,6 +259,12 @@ def build_body(layout, cfg):
         return (f'<div class="def card" style="padding:30px">'
                 f'<div class="term">{cfg.get("term","")}</div>'
                 f'<div class="exp">{cfg.get("explanation","")}</div></div>')
+    if layout == "spec_list":
+        rows = "".join(
+            f'<div class="spec-row"><span class="spec-label">{r.get("label","")}</span>'
+            f'<div class="spec-val">{r.get("value","")}</div></div>'
+            for r in cfg.get("rows", []))
+        return f'<div class="card" style="padding:12px 28px">{rows}</div>'
     if layout == "summary":
         tags = " ".join(f'<span class="tag">#{t}</span>' for t in cfg.get("tags", []))
         return (f'<div class="card" style="padding:34px;text-align:center">'
