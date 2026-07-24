@@ -133,7 +133,7 @@ python run_text_tutorial.py text_config.json --out output_text --use-existing
 
 或在支持 Skill 的 AI 客户端对话中直接说：
 
-> 用 screenshot-tutorial-generator 技能，根据下面这段文案给我做 5 张小红书风格的配图。主题：AI/科技。包含 1 张封面 + 4 张内容页。文案如下：……
+> 用 screenshot-infographic-skill 技能，根据下面这段文案给我做 5 张小红书风格的配图。主题：AI/科技。包含 1 张封面 + 4 张内容页。文案如下：……
 
 技能会：
 1. 把文案结构化（schema）并回述确认；

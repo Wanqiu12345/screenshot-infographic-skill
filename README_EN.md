@@ -184,7 +184,7 @@ The most common and recommended way is **just say it in chat**. The prompts belo
 
 ### Scenario 1: you have a screenshot, want feature tutorial images
 
-> Use the `screenshot-tutorial-generator` skill to make a set of feature tutorial images from this screenshot.
+> Use the `screenshot-infographic-skill` skill to make a set of feature tutorial images from this screenshot.
 > Features include: chat-to-mindmap, import-doc parsing, chart-type switching, multi-format export.
 > Brand name: 世界是一片荒原.AI 思维导图, website: https://th3hj2tsh4.coze.site/
 
@@ -192,7 +192,7 @@ The most common and recommended way is **just say it in chat**. The prompts belo
 
 ### Scenario 2: you only have text, want a topic-based visual
 
-> Use the `screenshot-tutorial-generator` skill to make 5 Xiaohongshu-style images from this topic.
+> Use the `screenshot-infographic-skill` skill to make 5 Xiaohongshu-style images from this topic.
 > Topic: Jinan medical insurance DRG payment flow.
 > Copy of the text:
 > 【paste your text here, or just give the topic】

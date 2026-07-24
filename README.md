@@ -184,7 +184,7 @@ python run_screenshot_tutorial.py
 
 ### 场景一：你有一张截图，想做功能教程图
 
-> 用 `screenshot-tutorial-generator` 技能，根据这张截图给我做一套功能教程图。
+> 用 `screenshot-infographic-skill` 技能，根据这张截图给我做一套功能教程图。
 > 功能包括：聊天生成导图、导入文档解析、图表类型切换、多格式导出。
 > 品牌名：世界是一片荒原.AI 思维导图，网址：https://th3hj2tsh4.coze.site/
 
@@ -192,7 +192,7 @@ python run_screenshot_tutorial.py
 
 ### 场景二：你只有一段文案，想做主题配图
 
-> 用 `screenshot-tutorial-generator` 技能，根据下面这个主题给我做 5 张小红书风格的配图。
+> 用 `screenshot-infographic-skill` 技能，根据下面这个主题给我做 5 张小红书风格的配图。
 > 主题：济南市医保 DRG 支付流程。
 > 文案如下：
 > 【把你的文案贴在这里，或只给主题也行】

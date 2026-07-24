@@ -1,5 +1,5 @@
 ---
-name: screenshot-tutorial-generator
+name: screenshot-infographic-skill
 description: >
   把「一张截图 + 一段功能描述」或「一段主题文案」自动变成一整套可在小红书/公众号/社群直接发的
   风格统一、视觉优美的图。两种模式：①截图模式——生成功能教程图/产品导览图（1张概览+单功能细节，
@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、杂志风信息图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic、AI 插图、3D 插画。
 agent_created: true
-version: 1.3.0
+version: 1.3.2
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)

@@ -16,8 +16,8 @@
 
 ```bash
 # 1. Fork 并克隆
-git clone https://github.com/<your-fork>/screenshot-tutorial-generator.git
-cd screenshot-tutorial-generator
+git clone https://github.com/<your-fork>/screenshot-infographic-skill.git
+cd screenshot-infographic-skill
 
 # 2. 一键安装依赖（创建隔离 .venv，装 Pillow + rapidocr-onnxruntime，检测浏览器）
 python install.py
@@ -34,7 +34,7 @@ python run_text_tutorial.py examples/jinan_drg.json --out /tmp/test --use-existi
 ## 三、项目结构速览
 
 ```
-screenshot-tutorial-generator/
+screenshot-infographic-skill/
 ├── SKILL.md                  # 技能主指令（触发词、双轨流程、关键规则）
 ├── run_screenshot_tutorial.py# 截图模式端到端
 ├── run_text_tutorial.py      # 纯文案模式端到端

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""纯文案模式端到端执行器（screenshot-tutorial-generator）
+"""纯文案模式端到端执行器（screenshot-infographic-skill）
 
 输入：一段已经由 AI 结构化好的文案配置 text_config.json（字段见 references/text_mode_design.md）。
 流程：主题/预设 -> 配色 -> 文生图生成每页 3D 插画（自愈：单图重试 + 收尾补漏）-> 填模板 -> 无头浏览器渲染成套 PNG。

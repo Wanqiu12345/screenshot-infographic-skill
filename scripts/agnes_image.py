@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Agnes AI 图片生成封装（screenshot-tutorial-generator 用）
+Agnes AI 图片生成封装（screenshot-infographic-skill 用）
 
 用途：
 - 纯文案模式：为每一页生成 3D 概念插画（文生图）。

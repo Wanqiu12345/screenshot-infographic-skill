@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""screenshot-tutorial-generator 端到端运行脚本（命令行 / 自动化用）。
+"""screenshot-infographic-skill 端到端运行脚本（命令行 / 自动化用）。
 
 串联：取色 → 提取 favicon → 裁剪功能区域 → 填充模板 → 无头浏览器渲染 PNG。
 

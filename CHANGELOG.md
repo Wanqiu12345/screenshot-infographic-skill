@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.2 (2026-07-24)
+
+### 更名：统一为仓库名 screenshot-infographic-skill
+- 技能目录、SKILL.md `name`、分发 zip、文档示例中的 `screenshot-tutorial-generator` 全部统一为 **`screenshot-infographic-skill`**（与 GitHub 仓库名一致）。
+- 分发包改为 `release/screenshot-infographic-skill.zip`，解压后顶层文件夹同名，旧 zip 移除。
+- 老用户升级：删除旧目录 `~/.workbuddy/skills/screenshot-tutorial-generator`，解压新包即可，功能无任何变化。
+
+## 1.3.1 (2026-07-24)
+
+### 新增：spec_list 布局 + 文案质量准则
+- 纯文案模式新增 `spec_list` 布局（标签+内容行），适合「名称/适用人群/使用场景」这类小白友好的规格页。
+- `SKILL.md` 新增「文案质量准则」：平实、干净、准确，禁止「说白了/神器/上头」等口水词与营销腔。
+- 新增 `scripts/package_skill.py` 打包脚本，约定每次提交随代码分发 zip。
+
 ## 1.3.0 (2026-07-22)
 
 ### 新增：极简传播封面（每种模式各一张 `00_cover.png`）

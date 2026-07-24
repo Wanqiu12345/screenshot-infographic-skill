@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """把当前 skill 打包成可分发 zip，提交前调用一次即可。
 
-产出：<skill根>/release/screenshot-tutorial-generator.zip
-解压后得到顶层文件夹 screenshot-tutorial-generator/，可直接复制到
+产出：<skill根>/release/screenshot-infographic-skill.zip
+解压后得到顶层文件夹 screenshot-infographic-skill/，可直接复制到
 ~/.workbuddy/skills/ 或 .workbuddy/skills/ 完成安装。
 
 已排除：.git / __pycache__ / *.pyc / output / scratch / .workbuddy /
@@ -14,7 +14,7 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "release")
 os.makedirs(OUT_DIR, exist_ok=True)
-OUT = os.path.join(OUT_DIR, "screenshot-tutorial-generator.zip")
+OUT = os.path.join(OUT_DIR, "screenshot-infographic-skill.zip")
 
 EXCLUDE_DIRS = {
     ".git", "__pycache__", "output", "output_text", "output_screenshot",
@@ -44,7 +44,7 @@ with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
             rel = os.path.relpath(full, ROOT)
             if should_exclude(rel):
                 continue
-            z.write(full, os.path.join("screenshot-tutorial-generator", rel))
+            z.write(full, os.path.join("screenshot-infographic-skill", rel))
             count += 1
 
 size = os.path.getsize(OUT)
