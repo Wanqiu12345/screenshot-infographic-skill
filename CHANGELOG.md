@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.6 (2026-08-14)
+
+### 新增：纯文案模式 visual_prompt 显式校验 + slogan 放宽
+- `run_text_tutorial.py` 新增 `validate_visual_prompts(cfg)`：文生图前检查 `cover` 与每个 `page` 的 `visual_prompt` 是否非空；缺失则 `sys.exit` 报错并明确列出缺了哪几页（带 `page_title` / `layout` 便于定位），把「静默生成空白占位」变成「跑命令瞬间就被告知」。
+- 新增 `--no-validate` 开关（默认开启校验），资深用户可跳过。
+- 封面 slogan 截断上限由 12 字放宽到 24 字（`_short_line(..., 24)`），避免短截产生「…」残句；`cover.html` 的 `.slogan` 支持自然换行。
+- 同步更新 `SKILL.md`：版本号与 slogan 上限说明。
+
 ## 1.3.5 (2026-08-14)
 
 ### 修复：截图模式赠品文案改用真实产品名（不再写死 demo 品牌）

@@ -107,12 +107,41 @@ def build_and_render(cfg_json, html_path, png_path):
     subprocess.run([PY, RENDER, html_path, png_path], check=True)
 
 
+def validate_visual_prompts(cfg, skip=False):
+    """纯文案模式 schema 校验：cover + 每个 page 都必须有 visual_prompt。
+
+    历史教训（2026-08-14）：某次 pilot 因 p4 漏填 visual_prompt，generate_text_images
+    的 ensure_asset 第30行 `if not prompt: return None` 静默跳过，导致 assets/page4.png
+    从未生成，模板渲染出「（未生成插画）」占位符，用户发布后才发现。
+    改为「显式失败」：缺 prompt 直接 sys.exit 报错，列出具体页面，让用户补全后再跑。
+    """
+    if skip:
+        return
+    errors = []
+    cover = cfg.get("cover", {})
+    if not cover.get("visual_prompt"):
+        errors.append("cover（封面）缺少 visual_prompt")
+    for i, pg in enumerate(cfg.get("pages", []), 1):
+        if not pg.get("visual_prompt"):
+            title = pg.get("page_title") or pg.get("layout") or f"第{i}页"
+            errors.append(f"pages[{i}]（{title}）缺少 visual_prompt")
+    if errors:
+        sys.exit(
+            "❌ 配置校验失败：以下页面缺少 visual_prompt，继续会生成「未生成插画」占位图。\n"
+            + "\n".join(f"  - {e}" for e in errors)
+            + "\n\n请为每个页面补全 visual_prompt（3D 插画的英文 prompt），再重新运行。"
+            + "\n（如确要纯文字页，请改用 --no-image；不要留空 visual_prompt 后期待自动降级。）"
+        )
+
+
 def main():
     ap = argparse.ArgumentParser(description="纯文案模式：结构化文案 -> 成套教程图")
     ap.add_argument("config", nargs="?", default=DEFAULT_DEMO,
                     help="text_config.json 路径（省略则用内置示例）")
     ap.add_argument("--out", default="output_text", help="输出目录")
     ap.add_argument("--no-image", action="store_true", help="跳过文生图，仅渲染排版占位")
+    ap.add_argument("--no-validate", action="store_true",
+                    help="跳过 visual_prompt 配置校验（默认开启：cover/每页缺 visual_prompt 会显式报错，避免生成「未生成插画」占位）")
     ap.add_argument("--use-existing", action="store_true", help="已有 assets/ 图片时直接复用，不重新生成")
     ap.add_argument("--retries", type=int, default=3, help="单图失败重试次数")
     ap.add_argument("--per-image-timeout", type=int, default=420,
@@ -137,6 +166,10 @@ def main():
     url = cfg.get("url", "")
     radius = cfg.get("radius", 18)
     cover = cfg.get("cover", {})
+
+    # ============ 阶段0：配置 schema 校验（缺 visual_prompt 显式失败，避免静默占位）============
+    if not a.no_image:
+        validate_visual_prompts(cfg, skip=a.no_validate)
 
     # ============ 阶段1：生成全部 3D 插画（自愈）============
     asset_jobs = [("cover", cover.get("visual_prompt"), os.path.join(assets, "cover.png"))]
@@ -174,7 +207,8 @@ def main():
         "icon_text": (brand[:1] if brand else "·"),
         "brand_main": cover.get("brand_main") or _distill_main(brand),
         "brand_sub": cover.get("brand_sub") or _distill_sub(brand),
-        "slogan": cover.get("slogan") or _short_line(cover.get("subtitle") or cfg.get("title", "")),
+        # slogan 上限提到 24：cover.html 的 .slogan 支持自然换行，硬截到 12 字会产生"…"残句
+        "slogan": cover.get("slogan") or _short_line(cover.get("subtitle") or cfg.get("title", ""), 24),
         "desc": cover.get("desc") or _short_line(cover.get("summary", ""), 20),
         "watermark": brand,
     }
