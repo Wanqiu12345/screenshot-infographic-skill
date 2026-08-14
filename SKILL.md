@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、杂志风信息图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic、AI 插图、3D 插画。
 agent_created: true
-version: 1.3.3
+version: 1.3.4
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)
@@ -26,6 +26,7 @@ version: 1.3.3
 - **每种模式额外生成一张「极简传播封面」`00_cover.png`**（独立一张、不编号），专供小红书/公众号直接发：
   顶部小字栏目名 + 居中大图标 + 超大品牌名 + ≤12 字 slogan + 可选一句说明；背景跟随主题色，文字克制、唯一色彩爆点是图标/品牌色。
 - 同时保留可编辑的 HTML 源文件。
+- **随图附赠一张小红书发布文案 `social_post.md`**：标题（< 20 字，随机主标题 + 2 备选）+ 一段正文（导语 + 要点 + 收尾 + 话题标签），可直接复制去发。内容由本次配置自动提炼，平实干净、不用营销腔。
 
 ---
 
