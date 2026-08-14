@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、杂志风信息图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic、AI 插图、3D 插画。
 agent_created: true
-version: 1.3.4
+version: 1.3.5
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)
@@ -78,6 +78,7 @@ version: 1.3.4
 - 细节图要讲的 3~4 个功能，以及**每个功能在截图上的定位依据**
 - 品牌页脚放什么（用户给了名字/网址就写上）
 - 是否检测到截图中有敏感信息，需不需要提醒打码
+- **产品名必须真实**：`run_screenshot_tutorial.py` 默认品牌是内置 demo 产品，**不可直接用于用户自己的截图**。运行前务必用环境变量传入截图对应产品的真实信息：`BRAND_NAME`（产品名）、`BRAND_URL`（网址）、`BRAND_SUBTITLE`（一句话副标题）、`BRAND_CATEGORY`（分类，如「AI/科技」「美食/餐饮」）。封面主/副标题与随图赠品文案都会自动从真实产品名推导。
 - **封面栏目名**：先根据用户输入推导一个栏目名候选（如医疗科普→「健康知识小科普」、工具类→「AI 工具实测」），回述时给出候选 + 2~3 个备选（工具分享 / 知识分享 / 其它），**请用户确认或自定义**后再出封面。
 
 回述格式示例：
