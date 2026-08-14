@@ -31,6 +31,19 @@ SKILL = BASE  # 本脚本就位于 skill 根目录
 sys.path.insert(0, str(BASE / "scripts"))
 from social_post import build_social_post, write_social_post
 
+
+def _split_brand(brand):
+    """品牌名按语义断行：仅在 '·' / '.' 处断开（空格保留完整），用于封面主/副标题。
+
+    例：「世界是一片荒原.AI 思维导图」→ ('世界是一片荒原', 'AI 思维导图')；
+        「美图秀秀」→ ('美图秀秀', '')。
+    """
+    for sep in ("·", "."):
+        if sep in brand:
+            m, s = brand.split(sep, 1)
+            return m.strip(), s.strip()
+    return brand.strip(), ""
+
 # 优先使用 install.py 创建的隔离 venv，否则回退系统 python3
 if sys.platform == "win32":
     VENV_PY = BASE / ".venv" / "Scripts" / "python.exe"
@@ -45,10 +58,18 @@ SCREENSHOT = Path(os.environ.get("SCREENSHOT", str(BASE / "examples" / "screensh
 OUT = BASE / "output"
 OUT.mkdir(exist_ok=True)
 
-# ===================== 改成你自己的产品信息 =====================
-BRAND = "世界是一片荒原.AI 思维导图"
-URL = "https://th3hj2tsh4.coze.site/"
-SUBTITLE = "聊天生成 · 文档解析 · 一键导出"
+# ===================== 产品信息（真实使用请覆盖）=====================
+# 默认用仓库自带 demo 产品（examples/screenshot.png 即该产品截图），便于一键演示。
+# 真实使用时，用环境变量覆盖为「截图里对应产品的真实名字 / 网址 / 副标题 / 分类」：
+#   set BRAND_NAME=你的产品名
+#   set BRAND_URL=https://你的产品网址/
+#   set BRAND_SUBTITLE=一句话副标题
+#   set BRAND_CATEGORY=产品分类（如「AI/科技」「美食/餐饮」「教育/知识」）
+# 不覆盖则沿用 demo 产品——切勿直接用于你自己的截图。
+BRAND = os.environ.get("BRAND_NAME", "世界是一片荒原.AI 思维导图")
+URL = os.environ.get("BRAND_URL", "https://th3hj2tsh4.coze.site/")
+SUBTITLE = os.environ.get("BRAND_SUBTITLE", "聊天生成 · 文档解析 · 一键导出")
+CATEGORY = os.environ.get("BRAND_CATEGORY", "AI/科技")
 BADGE = "功能导览"
 RADIUS = 18
 # =================================================================
@@ -58,8 +79,7 @@ RADIUS = 18
 # 背景跟随主题色；品牌名过长时拆成「主标题 + 副标题」两层（保留完整品牌，不缩写）。
 # 栏目名 series 由 agent 根据用户输入推导并与用户确认；此处给默认值便于一键演示。
 COVER_SERIES = "AI 工具实测"
-COVER_BRAND_MAIN = "世界是一片荒原"
-COVER_BRAND_SUB = "AI 思维导图"
+COVER_BRAND_MAIN, COVER_BRAND_SUB = _split_brand(BRAND)
 COVER_SLOGAN = "聊天一句话，画出脑图"
 COVER_DESC = "导入文档也能变导图"
 # =================================================================
@@ -239,15 +259,14 @@ def main():
         run(SKILL / "scripts" / "fill_template.py", cfg_path, OUT / f"detail_out_{slug}.html")
         run(SKILL / "scripts" / "render.py", OUT / f"detail_out_{slug}.html", OUT / f"{idx:02d}_{slug}.png", 1080, 1440, 2)
 
-    # 6. 随图附赠小红书文案
+    # 6. 随图附赠小红书文案（一律使用真实产品名，不写死 demo 品牌）
     social_theme = {
         "topic": BRAND,
         "subject": BRAND,
-        "category": "AI/科技",
+        "category": CATEGORY,
         "hook": SUBTITLE,
         "points": [it["title"] for it in ITEMS],
-        "closing": "聊天一句话，脑图就画好——需要的时候，直接拿来用。",
-        "tags": ["AI工具", "思维导图", BRAND],
+        "closing": "了解清楚之后，需要时直接拿来用就行。",
     }
     post = build_social_post(social_theme)
     sp = write_social_post(post, OUT)
