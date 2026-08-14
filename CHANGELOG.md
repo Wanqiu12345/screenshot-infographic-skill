@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.3 (2026-08-14)
+
+### 优化：纯文案模式内容页改为垂直流式布局
+- `templates/text_section.html` 默认从「左文右图双栏」改为「全宽垂直流式」：标题/导语 → 内容 → 插画 → 补充内容 → 总结，阅读动线更自然。
+- `grid_cards` 4 项时自动拆成 **2 张在插画上方 + 2 张在插画下方**，插画真正居中，彻底解决左下角大空白、卡片被压窄的问题。
+- 其余 layout（timeline / metrics / spec_list / definition 等）默认走全宽，不再挤在窄栏里。
+- 插画区域加 `min/max-height` 与 `flex` 自适应：内容少时插画吸收多余空间防空白，内容多时插画收缩防溢出。
+- 所有正文加 `-webkit-line-clamp` 兜底，避免极端长文案撑破页面。
+- 保留 `page_mode: "split"` 可显式切回旧双栏（兼容旧偏好）。
+
+### 修复：纯文案模式封面不再把空格产品名拆成主/副标题
+- `run_text_tutorial.py` 的 `_distill_main/_distill_sub` 移除空格分隔符，只按 `·` / `.` 拆分。
+- 修复 `"DeepSeek Harness"` 被错误拆成 `"DeepSeek"`（大标题）+ `"Harness"`（小副标题）的问题；多词产品名现在整体作为封面大标题。
+
 ## 1.3.2 (2026-07-24)
 
 ### 更名：统一为仓库名 screenshot-infographic-skill

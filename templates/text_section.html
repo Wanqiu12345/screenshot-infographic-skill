@@ -24,19 +24,55 @@ html,body{background:var(--page_bg);}
   font-weight:800;font-size:56px;line-height:1.2;color:var(--text_main);
 }
 .lead{font-size:27px;color:var(--text_sub);margin-top:14px;line-height:1.5;}
-.main{margin-top:26px;display:grid;grid-template-columns:1.12fr 0.88fr;gap:30px;flex:1;min-height:0;}
-.col-content{display:flex;flex-direction:column;gap:16px;overflow:hidden;}
+
+/* ---- 主内容区：默认垂直流式（全宽） ---- */
+.main{
+  margin-top:26px;display:flex;flex-direction:column;gap:22px;
+  flex:1;min-height:0;overflow:hidden;
+}
+.body-top,.body-bottom{
+  flex:0 0 auto;min-height:0;width:100%;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.hero{
+  flex:1 1 auto;min-height:240px;max-height:520px;width:100%;
+  border-radius:calc(var(--radius) + 8px);overflow:hidden;background:var(--card_bg);
+  box-shadow:0 18px 44px var(--accent_soft);
+  display:flex;align-items:center;justify-content:center;
+}
+.hero img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;}
+
+/* ---- 遗留双栏模式（page_mode=split） ---- */
+.main.split{
+  display:grid;grid-template-columns:1.12fr 0.88fr;gap:30px;
+}
+.main.split .body-top{grid-column:1;grid-row:1;overflow:hidden;height:100%;}
+.main.split .hero{grid-column:2;grid-row:1;height:100%;max-height:none;min-height:0;}
+.main.split .body-bottom{display:none;}
+
+/* ---- 卡片通用 ---- */
 .card{background:var(--card_bg);border-radius:var(--radius);padding:24px 26px;
   box-shadow:0 10px 26px var(--accent_soft);border:1px solid var(--line);}
-.hero{align-self:start;border-radius:calc(var(--radius)+6px);overflow:hidden;background:var(--card_bg);
-  box-shadow:0 18px 44px var(--accent_soft);height:100%;min-height:0;
-  display:flex;align-items:center;justify-content:center;}
-.hero img{width:100%;height:100%;object-fit:contain;display:block;}
-.summary{margin-top:22px;background:var(--accent2_soft);border-left:6px solid var(--accent2);
-  border-radius:var(--radius);padding:22px 28px;font-size:26px;line-height:1.5;color:var(--text_main);}
+.summary{
+  margin-top:22px;background:var(--accent2_soft);border-left:6px solid var(--accent2);
+  border-radius:var(--radius);padding:22px 28px;font-size:26px;line-height:1.5;color:var(--text_main);
+  flex:0 0 auto;
+}
 .footer{margin-top:auto;padding-top:22px;display:flex;justify-content:space-between;align-items:center;
-  font-size:22px;color:var(--text_sub);border-top:1px solid var(--line);}
+  font-size:22px;color:var(--text_sub);border-top:1px solid var(--line);flex:0 0 auto;}
 .footer .pg{font-weight:700;color:var(--accent);}
+
+/* ---- layout: grid_cards ---- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;min-height:0;align-items:stretch;}
+.gc{background:var(--card_bg);border-radius:var(--radius);padding:28px 30px;
+  box-shadow:0 8px 20px var(--accent_soft);border:1px solid var(--line);border-top:5px solid var(--accent);
+  display:flex;flex-direction:column;justify-content:center;}
+.gc .ic{width:52px;height:52px;border-radius:14px;background:var(--accent_soft);display:flex;
+  align-items:center;justify-content:center;color:var(--accent);flex:0 0 auto;}
+.gc h3{font-size:28px;margin-top:16px;color:var(--text_main);line-height:1.3;}
+.gc p{font-size:23px;color:var(--text_sub);margin-top:10px;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.gc .ic svg{width:26px;height:26px;stroke:currentColor;fill:none;}
 
 /* ---- layout: timeline ---- */
 .tl{position:relative;padding:10px 18px 10px 40px;}
@@ -46,25 +82,16 @@ html,body{background:var(--page_bg);}
   background:var(--accent);box-shadow:0 0 0 5px var(--accent_soft);}
 .tl-date{font-size:23px;font-weight:800;color:var(--accent);}
 .tl-title{font-size:28px;font-weight:700;color:var(--text_main);margin-top:2px;}
-.tl-desc{font-size:22px;color:var(--text_sub);margin-top:3px;line-height:1.45;}
-
-/* ---- layout: grid_cards ---- */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.gc{background:var(--card_bg);border-radius:var(--radius);padding:20px;box-shadow:0 8px 20px var(--accent_soft);
-  border:1px solid var(--line);border-top:5px solid var(--accent);}
-.gc .ic{width:46px;height:46px;border-radius:12px;background:var(--accent_soft);display:flex;
-  align-items:center;justify-content:center;color:var(--accent);}
-.gc h3{font-size:25px;margin-top:12px;color:var(--text_main);line-height:1.3;}
-.gc p{font-size:21px;color:var(--text_sub);margin-top:6px;line-height:1.45;}
-
-.gc .ic svg{width:26px;height:26px;stroke:currentColor;fill:none;}
+.tl-desc{font-size:22px;color:var(--text_sub);margin-top:3px;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
 /* ---- layout: big_number ---- */
 .bignum{text-align:center;padding:20px 14px;}
 .bignum .n{font-family:'Noto Serif SC',Georgia,serif;font-weight:800;font-size:clamp(80px, 10vw, 110px);line-height:1;white-space:nowrap;
   background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;}
 .bignum .l{font-size:30px;font-weight:700;color:var(--text_main);margin-top:8px;}
-.bignum .s{font-size:24px;color:var(--text_sub);margin-top:10px;line-height:1.5;}
+.bignum .s{font-size:24px;color:var(--text_sub);margin-top:10px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 
 /* ---- layout: price_table ---- */
 table.pt{width:100%;border-collapse:collapse;font-size:24px;}
@@ -75,26 +102,29 @@ table.pt tr td:first-child{font-weight:700;color:var(--accent);}
 /* ---- layout: metrics ---- */
 .metric{display:flex;align-items:baseline;gap:18px;padding:16px 4px;border-bottom:1px solid var(--line);}
 .metric:last-child{border-bottom:none;}
-.metric .mv{font-size:40px;font-weight:800;color:var(--accent);min-width:150px;}
+.metric .mv{font-size:44px;font-weight:800;color:var(--accent);min-width:150px;}
 .metric .mn{font-size:26px;font-weight:700;color:var(--text_main);}
-.metric .md{font-size:21px;color:var(--text_sub);margin-top:2px;}
+.metric .md{font-size:21px;color:var(--text_sub);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
 /* ---- layout: quote / summary ---- */
 .quote{font-family:'Noto Serif SC',Georgia,serif;font-size:44px;line-height:1.5;color:var(--text_main);
   text-align:center;padding:20px 6px;}
 .quote .mark{color:var(--accent);font-size:70px;line-height:0;vertical-align:-14px;}
 .def .term{font-size:46px;font-weight:800;color:var(--accent);}
-.def .exp{font-size:27px;color:var(--text_sub);margin-top:14px;line-height:1.6;}
+.def .exp{font-size:27px;color:var(--text_sub);margin-top:14px;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
 .tag{display:inline-block;background:var(--accent_soft);color:var(--accent);border-radius:999px;
   padding:6px 18px;margin:5px 6px 0 0;font-size:22px;font-weight:600;}
 .center{text-align:center;}
 
-/* ---- layout: spec_list（名称/适用人群/使用场景 等标签清单）---- */
-.spec-row{padding:20px 2px;border-bottom:1px solid var(--line);}
+/* ---- layout: spec_list ---- */
+.spec-row{padding:18px 2px;border-bottom:1px solid var(--line);}
 .spec-row:last-child{border-bottom:none;}
 .spec-label{display:inline-block;background:var(--accent_soft);color:var(--accent);
   font-size:22px;font-weight:800;letter-spacing:1px;border-radius:8px;padding:5px 14px;}
-.spec-val{font-size:26px;color:var(--text_main);margin-top:11px;line-height:1.55;}
+.spec-val{font-size:26px;color:var(--text_main);margin-top:10px;line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -107,9 +137,10 @@ table.pt tr td:first-child{font-weight:700;color:var(--accent);}
     <div class="ptitle">__PAGETITLE__</div>
     <div class="lead">__LEAD__</div>
   </div>
-  <div class="main">
-    <div class="col-content">__BODY__</div>
+  <div class="main __MAIN_CLASS__">
+    <div class="body-top">__BODY_TOP__</div>
     <div class="hero">__HERO__</div>
+    <div class="body-bottom">__BODY_BOTTOM__</div>
   </div>
   <div class="summary">__SUMMARY__</div>
   __FOOTER__

@@ -50,10 +50,10 @@ def slug(s, n=14):
 
 
 def _distill_main(brand):
-    """品牌名拆主标题：优先按 '.' / '·' / ' ' 在首个分隔符处断开，保留完整品牌不缩写。"""
+    """品牌名拆主标题：只按显式分隔符 '.' / '·' 拆分；空格保留，避免把多词产品名（如 DeepSeek Harness）拆散。"""
     if not brand:
         return ""
-    for sep in (".", "·", " "):
+    for sep in (".", "·"):
         if sep in brand:
             return brand.split(sep, 1)[0].strip()
     return brand.strip()
@@ -62,7 +62,7 @@ def _distill_main(brand):
 def _distill_sub(brand):
     if not brand:
         return ""
-    for sep in (".", "·", " "):
+    for sep in (".", "·"):
         if sep in brand:
             return brand.split(sep, 1)[1].strip()
     return ""
