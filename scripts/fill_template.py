@@ -216,6 +216,18 @@ def _tl_item(it):
             f'<div class="tl-desc">{it.get("desc","")}</div></div>')
 
 
+def _grid_cells(items, feat, feat_soft):
+    cells = []
+    for i, it in enumerate(items):
+        c = feat[i % len(feat)]
+        cs = feat_soft[i % len(feat_soft)]
+        cells.append(
+            f'<div class="gc" style="border-top-color:{c}">'
+            f'<div class="ic" style="background:{cs};color:{c}">{icon_svg(it.get("icon","star"))}</div>'
+            f'<h3>{it.get("title","")}</h3><p>{it.get("desc","")}</p></div>')
+    return cells
+
+
 def build_body(layout, cfg):
     pal = cfg.get("palette", {})
     feat = pal.get("feature", [pal.get("accent", "#888")])
@@ -224,15 +236,7 @@ def build_body(layout, cfg):
         items = "".join(_tl_item(i) for i in cfg.get("items", []))
         return f'<div class="tl card" style="padding:14px 20px 14px 44px">{items}</div>'
     if layout == "grid_cards":
-        cells = []
-        for i, it in enumerate(cfg.get("items", [])):
-            c = feat[i % len(feat)]
-            cs = feat_soft[i % len(feat_soft)]
-            cells.append(
-                f'<div class="gc" style="border-top-color:{c}">'
-                f'<div class="ic" style="background:{cs};color:{c}">{icon_svg(it.get("icon","star"))}</div>'
-                f'<h3>{it.get("title","")}</h3><p>{it.get("desc","")}</p></div>')
-        return f'<div class="grid2">{ "".join(cells) }</div>'
+        return f'<div class="grid2">{ "".join(_grid_cells(cfg.get("items", []), feat, feat_soft)) }</div>'
     if layout == "big_number":
         return (f'<div class="bignum card"><div class="n">{cfg.get("number","")}</div>'
                 f'<div class="l">{cfg.get("label","")}</div>'
@@ -331,7 +335,25 @@ def build_text_section(cfg):
     html = html.replace("__PAGETITLE__", cfg.get("page_title", cfg.get("title", "")))
     html = html.replace("__LEAD__", cfg.get("lead", ""))
     html = html.replace("__HERO__", hero_html)
-    html = html.replace("__BODY__", build_body(cfg.get("layout", "grid_cards"), cfg))
+
+    layout = cfg.get("layout", "grid_cards")
+    page_mode = cfg.get("page_mode", "stack")
+    items = cfg.get("items", [])
+
+    # 垂直流式：4 张卡片时拆成 2+2 环绕插画，减少空白；其余 layout 全宽置于插画上方
+    if page_mode != "split" and layout == "grid_cards" and len(items) == 4:
+        pal = cfg.get("palette", {})
+        feat = pal.get("feature", [pal.get("accent", "#888")])
+        feat_soft = pal.get("feature_soft", [rgba(pal.get("accent", "#888"), 0.13)])
+        body_top = f'<div class="grid2">{ "".join(_grid_cells(items[:2], feat, feat_soft)) }</div>'
+        body_bottom = f'<div class="grid2">{ "".join(_grid_cells(items[2:], feat, feat_soft)) }</div>'
+    else:
+        body_top = build_body(layout, cfg)
+        body_bottom = ""
+
+    html = html.replace("__BODY_TOP__", body_top)
+    html = html.replace("__BODY_BOTTOM__", body_bottom)
+    html = html.replace("__MAIN_CLASS__", page_mode)
     html = html.replace("__SUMMARY__", cfg.get("summary", ""))
     html = html.replace("__FOOTER__", build_footer(cfg.get("footer")))
     return html
