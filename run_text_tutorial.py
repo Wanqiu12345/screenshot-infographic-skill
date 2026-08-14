@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(HERE, "scripts"))
 from color_system import build_palette_for_text
 import agnes_image
 from generate_text_images import ensure_asset, is_valid
+from social_post import build_social_post, write_social_post
 
 PY = sys.executable
 TPL_BUILD = os.path.join(HERE, "scripts", "fill_template.py")
@@ -209,6 +210,22 @@ def main():
         json.dump(pcfg, open(j, "w", encoding="utf-8"), ensure_ascii=False)
         build_and_render(j, os.path.join(base, f"_page{i}.html"),
                          os.path.join(base, f"{i + 1:02d}_{slug(pg.get('page_title', pg.get('layout', 'page')))}.png"))
+
+    # ============ 阶段3：随图附赠小红书文案 ============
+    social_theme = {
+        "topic": cfg.get("title", ""),
+        "subject": cfg.get("brand") or cfg.get("title", ""),
+        "category": cfg.get("category", ""),
+        "hook": cover.get("subtitle") or cover.get("title") or cfg.get("title", ""),
+        "points": [pg.get("page_title") for pg in pages if pg.get("page_title")],
+        "closing": pages[-1].get("summary", "") if pages else "",
+        "tags": [series, (cfg.get("brand") or cfg.get("title", "")), "AI工具" if "AI" in (cfg.get("category", "")) else None],
+    }
+    social_theme["tags"] = [t for t in social_theme["tags"] if t][:3]
+    post = build_social_post(social_theme)
+    sp = write_social_post(post, base)
+    print(f"[赠品] 已生成小红书文案：{sp}")
+    print(f"       标题：{post['title']}（{post['title_len']} 字）｜备选：{' / '.join(post['alt_titles'])}")
 
     print(f"[完成] 极简封面 00_cover.png + 丰富封面与内容页共 {total} 张，输出目录：{base}")
 
