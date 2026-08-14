@@ -27,6 +27,10 @@ from pathlib import Path
 BASE = Path(__file__).parent.resolve()
 SKILL = BASE  # 本脚本就位于 skill 根目录
 
+# social_post 是纯标准库模块，直接 import 即可（无需 venv 依赖）
+sys.path.insert(0, str(BASE / "scripts"))
+from social_post import build_social_post, write_social_post
+
 # 优先使用 install.py 创建的隔离 venv，否则回退系统 python3
 if sys.platform == "win32":
     VENV_PY = BASE / ".venv" / "Scripts" / "python.exe"
@@ -234,6 +238,21 @@ def main():
     for slug, idx, cfg_path in detail_cfgs:
         run(SKILL / "scripts" / "fill_template.py", cfg_path, OUT / f"detail_out_{slug}.html")
         run(SKILL / "scripts" / "render.py", OUT / f"detail_out_{slug}.html", OUT / f"{idx:02d}_{slug}.png", 1080, 1440, 2)
+
+    # 6. 随图附赠小红书文案
+    social_theme = {
+        "topic": BRAND,
+        "subject": BRAND,
+        "category": "AI/科技",
+        "hook": SUBTITLE,
+        "points": [it["title"] for it in ITEMS],
+        "closing": "聊天一句话，脑图就画好——需要的时候，直接拿来用。",
+        "tags": ["AI工具", "思维导图", BRAND],
+    }
+    post = build_social_post(social_theme)
+    sp = write_social_post(post, OUT)
+    print(f"[赠品] 已生成小红书文案：{sp}")
+    print(f"       标题：{post['title']}（{post['title_len']} 字）｜备选：{' / '.join(post['alt_titles'])}")
 
     print("\n[✓] 完成！输出在:", OUT)
     for name in ["00_cover.png", "01_overview.png", "02_chat_gen.png", "03_import_doc.png", "04_chart_type.png", "05_export.png"]:
