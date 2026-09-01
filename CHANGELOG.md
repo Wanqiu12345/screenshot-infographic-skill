@@ -9,6 +9,7 @@
 - v2 无头渲染强制传最小环境变量（PATH/SYSTEMROOT/TEMP/TMP/USERPROFILE）：宿主注入的 `NODE_OPTIONS` 等变量会让 Edge 无头模式秒退。
 - `DETAILS` 的 `chat_gen` 新增 `coords_v2` 字段（v2 模式用更聚焦的输入栏裁剪框 0.26,0.875,0.50,0.115），v1 流程忽略该字段。
 - `SKILL.md` 新增「风格选择（v1 经典 / v2 晚秋简约）」章节。
+- `README.md` / `README_EN.md` 同步更新：效果预览替换为 v2 成图、新增两种风格说明与 `--style v2` 命令行示例、目录结构补 `screenshot_v2.py`、FAQ 新增风格选择问答。`examples/` 的截图模式预览图（00~05）全部替换为 v2 输出。
 
 ## 1.3.6 (2026-08-14)
 
