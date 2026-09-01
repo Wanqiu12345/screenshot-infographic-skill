@@ -60,6 +60,15 @@ def main():
 
     userdir = tempfile.mkdtemp(prefix="tutgen_")
     url = "file:///" + html.replace("\\", "/")
+    # 最小环境：宿主注入的 NODE_OPTIONS / ELECTRON_RUN_AS_NODE / CHROME_CRASHPAD_PIPE_NAME
+    # 等变量会让 Chromium 无头模式秒退（2026-09-01 实测），只传必需项。
+    safe_env = {
+        "PATH": os.environ.get("PATH", ""),
+        "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+        "TEMP": os.environ.get("TEMP", ""),
+        "TMP": os.environ.get("TMP", ""),
+        "USERPROFILE": os.environ.get("USERPROFILE", ""),
+    }
     cmd = [
         browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
         "--no-sandbox", "--disable-dev-shm-usage", f"--user-data-dir={userdir}",
@@ -69,7 +78,7 @@ def main():
         f"--screenshot={out}", url,
     ]
     try:
-        subprocess.run(cmd, capture_output=True, timeout=90)
+        subprocess.run(cmd, capture_output=True, timeout=90, env=safe_env)
     finally:
         shutil.rmtree(userdir, ignore_errors=True)
 
