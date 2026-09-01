@@ -72,9 +72,16 @@
 
 > 截图模式有两种风格：**v2 晚秋简约风**（上图，命令行 `--style v2` 或对 AI 说「用 v2 风格」）和 **v1 经典风**（跟随截图配色 + 功能色卡片）。默认仍是 v1，两种风格共用同一套截图识别与裁剪流程。
 
-**② 纯文案模式** —— 你只给一个主题（这里以「济南市医保 DRG 支付流程」为例），它自动结构化 + 文生图 3D 插画 + 杂志风排版，配色按主题自动推导（医疗 → 青绿）：
+**② 纯文案模式** —— 你只给一个主题（这里以「Workflow 和 Agent 的区别」为例），AI 自动结构化 + 表意型排版，配色按主题自动推导：
 
-| 封面（文生图 3D 插画） | 核心规则页（插画完整不裁切） |
+| v2 封面（SVG 示意图编码内容） | v2 内容页（三列对比表） |
+|---|---|
+| ![WF封面](examples/wf_agent_v2_00_cover.png) | ![WF对比](examples/wf_agent_v2_03_difference.png) |
+| ![WF流程](examples/wf_agent_v2_01_workflow.png) | ![WF选择](examples/wf_agent_v2_04_howtochoose.png) |
+
+> 文案模式同样有两种风格：**v2 表意型排版**（上图，`--style v2`：视觉元素直接编码内容——竖链=因果、点阵=群体、时间线=演进，每页 flex 撑满不留白，零插画零成本）和 **v1 杂志风**（默认，3D 概念插画 + 杂志排版，配色按主题推导，下图）：
+
+| v1 封面（文生图 3D 插画） | v1 核心规则页（插画完整不裁切） |
 |---|---|
 | ![DRG封面](examples/jinan_drg_01_cover.png) | ![DRG规则](examples/jinan_drg_03_DRG付费的4条核心规则.png) |
 | ![DRG流程](examples/jinan_drg_02_一次就医的DRG付费全流程.png) | ![DRG大数字](examples/jinan_drg_04_患者负担实打实降了.png) |
@@ -104,10 +111,10 @@
 
 适合：软件/网站/小程序/后台系统的功能介绍、上手教程。
 
-### 方式二：纯文案 → 杂志风信息图
+### 方式二：纯文案 → 信息图
 
 **你发给 AI 的**：一段主题文案（比如“帮我做 5 张关于 XX 的科普配图”）。
-**AI 还给你的**：1 张杂志风封面 + 若干内容页，每页自动配一张 3D 概念插画，配色按主题自动推导。
+**AI 还给你的**：1 张封面 + 若干内容页。支持两种风格：**v2 表意型排版**（`--style v2`，纯排版零插画，视觉元素直接编码内容）和 **v1 杂志风**（默认，每页自动配一张 3D 概念插画，配色按主题自动推导）。
 
 适合：知识科普、活动预告、产品种草、资讯解读——**手头没有现成截图也能做**。
 
@@ -232,8 +239,11 @@ SCREENSHOT=/path/to/your.png python run_screenshot_tutorial.py --style v2
 # 1) 让 AI 把你的文案结构化后写入一个 json（字段规范见 references/text_mode_design.md）
 # 2) 运行端到端脚本，输出到 output_text/
 python run_text_tutorial.py my_text.json --out output_text
+# 想要 v2 表意型排版（纯排版零插画）：
+python run_text_tutorial.py my_text.json --style v2 --out output_text
+# 参考示例：examples/wf_agent_v2.json（Workflow vs Agent 主题）
 
-# 小技巧：如果文生图比较慢，可以先并行把 3D 插画生成好，再复用渲染，省时间：
+# 小技巧：v1 杂志风如果文生图比较慢，可以先并行把 3D 插画生成好，再复用渲染，省时间：
 python scripts/generate_text_images.py my_text.json --out output_text --workers 3
 python run_text_tutorial.py my_text.json --out output_text --use-existing
 ```
@@ -273,7 +283,7 @@ python run_text_tutorial.py my_text.json --out output_text --use-existing
 
 ### 2) 配色主题（截图模式自动跟随；文案模式可指定）
 
-纯文案模式支持按**主题分类**或**命名预设**自动配色，不再写死奶油白：
+纯文案模式支持按**主题分类**或**命名预设**自动配色，不再写死奶油白（仅 v1 杂志风；**v2 表意型排版零配置**，主色在 json 的 `primary` 里指定或自动推导）：
 
 - `category`：如 `AI/科技`、`财经`、`美食`、`教育`、`医疗`、`职场` 等，自动匹配合适色系。
 - `preset`：如 `cream`（奶油）、`redbook`（小红书）、`obsidian`（暗黑）、`cyber`（科技）、`forest`（森系）、`ocean`（海洋）等。
@@ -310,10 +320,12 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A[你发一段文案] --> B[AI 结构化：拆页 + 配色 + 写插画提示词]
-    B --> C[文生图：每页 3D 插画]
-    C --> D[杂志风排版 + 渲染]
-    D --> E[成套 3:4 PNG]
+    A[你发一段文案] --> B[AI 结构化：拆页 + 配色]
+    B --> C1{--style?}
+    C1 -->|v1 默认| D1[文生图：每页 3D 插画] --> E1[杂志风排版 + 渲染]
+    C1 -->|v2| D2[表意型版式：cover/chain/timeline/compare] --> E2[纯排版渲染]
+    E1 --> F[成套 3:4 PNG]
+    E2 --> F
 ```
 
 底层关键技术点：
@@ -344,6 +356,7 @@ screenshot-infographic-skill/
 │   ├── ocr_locate.py             # OCR 文字定位
 │   ├── extract_favicon.py        # 提取浏览器标签页 favicon 作 logo
 │   ├── screenshot_v2.py          # 截图模式 v2「晚秋简约风」渲染器（--style v2）
+│   ├── text_v2.py                # 纯文案模式 v2「表意型排版」渲染器（--style v2）
 │   ├── fill_template.py          # 组装 HTML 模板
 │   ├── render.py                 # 无头浏览器渲染 PNG
 │   ├── agnes_image.py            # Agnes 免费文生图封装（内置兜底密钥）
@@ -364,7 +377,9 @@ screenshot-infographic-skill/
     ├── 00_cover.png              # 截图模式极简封面示例
     ├── 01_overview.png …         # 截图模式示例输出
     ├── jinan_drg.json            # 纯文案模式示例配置（济南医保 DRG 主题）
-    └── jinan_drg_*.png            # 纯文案模式示例输出
+    ├── jinan_drg_*.png            # 纯文案模式 v1 示例输出
+    ├── wf_agent_v2.json          # 纯文案模式 v2 示例配置（Workflow vs Agent 主题）
+    └── wf_agent_v2_*.png          # 纯文案模式 v2 示例输出
 ```
 
 ---
