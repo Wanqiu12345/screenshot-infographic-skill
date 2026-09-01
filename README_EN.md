@@ -56,7 +56,7 @@ And **before generating, it confirms the plan with you** — no wrong crops, no 
 
 ## 🖼️ Preview (see the images)
 
-**① Screenshot mode** — generated from a real screenshot of "世界是一片荒原.AI 思维导图" (a mind-map product). Main color, corner radius, and icons all auto-follow the original:
+**① Screenshot mode** — generated from a real screenshot of "世界是一片荒原.AI 思维导图" (a mind-map product), shown in the **v2 "Late Autumn Minimal" style** (enable with `--style v2`): the brand color is auto-derived from the screenshot's dominant color (desaturated and darkened for a premium feel) with a small gold accent; the whole set is separated by 1px hairlines only — no rainbow feature-color cards, no gradient badges, no heavy drop shadows:
 
 | Cover · standalone share image | Image 1 · Overview |
 |---|---|
@@ -69,6 +69,8 @@ And **before generating, it confirms the plan with you** — no wrong crops, no 
 | Image 4 · Single-feature detail |
 |---|
 | ![export detail](examples/05_export.png) |
+
+> Screenshot mode ships with two styles: **v2 Late Autumn Minimal** (shown above; CLI `--style v2`, or just tell your AI "use the v2 style") and **v1 Classic** (follows the screenshot's palette + feature-color cards). v1 remains the default; both styles share the same screenshot-recognition and cropping pipeline.
 
 **② Plain-text mode** — give it just a topic (here, "Jinan medical insurance DRG payment flow" as an example). It auto-structures the text, generates 3D illustrations, and lays it out magazine-style; colors are derived from the topic (medical → teal/green):
 
@@ -98,7 +100,7 @@ To help more people discover and install this skill via GitHub / Google, we reco
 ### Mode 1: Screenshot → tutorial images
 
 **You send the AI**: one product screenshot + a feature description.
-**The AI returns**: 1 overview image (all features broken into cards) + several single-feature detail images (the relevant region auto-cropped).
+**The AI returns**: 1 overview image (all features broken into cards) + several single-feature detail images (the relevant region auto-cropped). Two styles available: **v1 Classic** (default; follows the screenshot's palette + feature-color cards) and **v2 Late Autumn Minimal** (`--style v2`; single brand color + 1px hairlines, see the preview above).
 
 Great for: feature intros, getting-started guides for software / websites / mini-programs / admin panels.
 
@@ -208,12 +210,14 @@ If you prefer the command line, or need batch generation:
 ```bash
 # Bundled example "世界是一片荒原.AI 思维导图" screenshot — runs the demo out of the box
 python run_screenshot_tutorial.py
+# Switch to the v2 "Late Autumn Minimal" style (single brand color + 1px hairlines, see preview above):
+python run_screenshot_tutorial.py --style v2
 # Use your own screenshot:
 # Windows
 set SCREENSHOT=D:/path/to/your.png
-python run_screenshot_tutorial.py
+python run_screenshot_tutorial.py --style v2
 # macOS / Linux
-SCREENSHOT=/path/to/your.png python run_screenshot_tutorial.py
+SCREENSHOT=/path/to/your.png python run_screenshot_tutorial.py --style v2
 ```
 
 **Plain-text mode**
@@ -328,6 +332,7 @@ screenshot-infographic-skill/
 │   ├── crop_region.py            # Crop feature regions by coordinates
 │   ├── ocr_locate.py             # OCR text localization
 │   ├── extract_favicon.py        # Extract browser-tab favicon as logo
+│   ├── screenshot_v2.py          # Screenshot mode v2 "Late Autumn Minimal" renderer (--style v2)
 │   ├── fill_template.py          # Assemble HTML templates
 │   ├── render.py                 # Headless browser PNG render
 │   ├── agnes_image.py            # Agnes free text-to-image wrapper (built-in fallback key)
@@ -417,6 +422,9 @@ A: Default 1080×1440 portrait 3:4 (rendered at 2× → 2160×2880 HD). Great fo
 
 **Q: Can I pick my own colors, or is it only cream-white?**
 A: Not hard-coded to cream. Screenshot mode follows the original; plain-text mode derives colors from topic/preset (tech → cool blue-cyan, medical → teal-green, food → warm orange…), or you set `preset` in the json.
+
+**Q: How do I choose between the two screenshot-mode styles?**
+A: Add `--style v2` on the command line (or tell your AI "use the v2 Late Autumn Minimal style") for the single-brand-color + 1px-hairline minimal look with high information density. Without the flag you get v1 Classic (screenshot-following palette + feature-color cards). v2's brand color is also auto-derived from your screenshot — no manual color values needed.
 
 **Q: What is the "confirmation gate"?**
 A: Before generating, the skill reads back the theme, feature list, which region each image maps to, and footer content for your confirmation — better to ask than to produce a wrong image. If your description is vague or localization is off, it asks first.
