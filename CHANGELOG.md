@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 (2026-09-01)
+
+- **纯文案模式新增 `--style v2`「表意型排版」**：纯排版零插画，视觉元素直接编码内容（竖链=因果、点阵=群体、时间线=演进、三列对比=差异、SVG 示意图封面）；每页 flex 撑满 1080×1440 不留白。渲染器 `scripts/text_v2.py`，示例配置 `examples/wf_agent_v2.json` + 4 张 v2 成图进 `examples/`。
+- **修复 `scripts/render.py` 无头渲染隐患**：改为最小环境变量渲染（SAFE_ENV）。宿主注入的 `NODE_OPTIONS` / `ELECTRON_RUN_AS_NODE` / `CHROME_CRASHPAD_PIPE_NAME` 等变量会让 Chromium 无头模式秒退，此前 v1 流程在特定会话环境下会随机失败。
+- `README.md` / `README_EN.md` 同步：纯文案模式预览新增 v2 成图（保留 v1 对照）、`--style v2` 用法、配色章节标注 v2 零配置、文案模式流水线图加风格分支、目录树补 `text_v2.py` 与 v2 示例文件。
+- 默认行为不变：不带 `--style` 时两种模式均走 v1。
+
 ## 1.4.0 (2026-09-01)
 
 ### 新增：截图模式 v2「晚秋简约风」（`--style v2`）
