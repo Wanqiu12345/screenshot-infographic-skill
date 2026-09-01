@@ -47,7 +47,7 @@ This skill handles all of the above:
 
 | All you do | What you get |
 |---|---|
-| Send one screenshot + a short description | 4~5 matching tutorial images (style auto-follows the screenshot) |
+| Send one screenshot + a short description | 4~5 matching tutorial images (style auto-follows the screenshot; v1 Classic / v2 Late Autumn Minimal) |
 | Send a paragraph / a topic | 5~6 magazine-style infographics (each with a 3D illustration) |
 
 And **before generating, it confirms the plan with you** — no wrong crops, no leaks.
@@ -160,7 +160,11 @@ If you installed manually, run a quick check (no screenshot needed — uses the 
 python run_screenshot_tutorial.py
 ```
 
-If `output/` now contains `00_cover.png` (minimalist share cover) and `01_overview.png` etc., install succeeded ✅.
+If `output/` now contains `00_cover.png` (minimalist share cover) and `01_overview.png` etc., install succeeded ✅. To also preview the v2 Late Autumn Minimal style, run:
+
+```bash
+python run_screenshot_tutorial.py --style v2
+```
 
 ---
 
@@ -188,9 +192,11 @@ The most common and recommended way is **just say it in chat**. The prompts belo
 
 > Use the `screenshot-infographic-skill` skill to make a set of feature tutorial images from this screenshot.
 > Features include: chat-to-mindmap, import-doc parsing, chart-type switching, multi-format export.
+> Use the v2 Late Autumn Minimal style.
 > Brand name: 世界是一片荒原.AI 思维导图, website: https://th3hj2tsh4.coze.site/
 
 **Drag your screenshot into the chat box** and add a feature description. The skill will **recap the plan and wait for your OK before generating** — no wrong crops.
+Without a style hint you get v1 Classic (screenshot-following palette + feature-color cards). For the minimal look shown in the preview above, just add "**use the v2 Late Autumn Minimal style**" — no color values needed.
 
 ### Scenario 2: you only have text, want a topic-based visual
 
@@ -275,6 +281,8 @@ Plain-text mode supports auto-coloring by **category** or **named preset** — n
 
 Set `category` or `preset` in the text json; see `references/text_mode_design.md`.
 
+> The screenshot mode's v2 Late Autumn Minimal style needs **zero color configuration**: the brand color is auto-derived from your screenshot's dominant color (desaturated and darkened), with a built-in gold accent — nothing to tune, nothing required.
+
 ### 3) Brand footer
 
 Brand name only → footer shows "name + page number"; name + website → "name + website + page number"; neither → footer auto-omitted. Handled smartly, no blank placeholders.
@@ -290,9 +298,13 @@ flowchart LR
     A[You send a screenshot + feature description] --> B[Extract colors / detect theme & features]
     B --> C[OCR locate each feature region]
     C --> D[Recap plan, ask for confirmation]
-    D -->|Confirm| E[Generate set of images + editable HTML]
+    D -->|Confirm| S{Style choice}
+    S -->|Default| E1[v1 Classic: screenshot-following palette + feature-color cards]
+    S -->|--style v2| E2[v2 Late Autumn Minimal: single brand color + 1px hairlines]
     D -->|Question| F[Ask you first, then continue]
 ```
+
+Both styles **share the same recognition & cropping pipeline** — only the visual language switches: v1 derives a primary color + 6 feature colors via the professional color system; v2 desaturates/darkens the screenshot's dominant color into a single brand color with a small gold accent, separated by 1px hairlines only.
 
 Plain-text mode pipeline:
 
