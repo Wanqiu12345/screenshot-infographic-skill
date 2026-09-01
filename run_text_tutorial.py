@@ -10,6 +10,8 @@
   python run_text_tutorial.py my_text.json                # 默认输出到 ./output_text
   python run_text_tutorial.py examples/jinan_drg.json --no-image   # 跳过文生图（仅看排版占位）
   python run_text_tutorial.py examples/jinan_drg.json --use-existing  # 已有 assets/ 直接复用渲染
+  python run_text_tutorial.py --style v2                  # v2 表意型排版（晚秋简约风，无插画离线可跑）
+  python run_text_tutorial.py my_v2.json --style v2       # v2 专属配置（见 examples/wf_agent_v2.json）
 """
 import sys, os, re, json, argparse, subprocess, time
 
@@ -25,6 +27,7 @@ PY = sys.executable
 TPL_BUILD = os.path.join(HERE, "scripts", "fill_template.py")
 RENDER = os.path.join(HERE, "scripts", "render.py")
 DEFAULT_DEMO = os.path.join(HERE, "examples", "jinan_drg.json")
+V2_DEMO = os.path.join(HERE, "examples", "wf_agent_v2.json")
 
 
 def agnes_reachable(host="apihub.agnes-ai.com", timeout=10):
@@ -134,11 +137,34 @@ def validate_visual_prompts(cfg, skip=False):
         )
 
 
+def run_text_v2(a):
+    """--style v2：走表意型排版引擎（scripts/text_v2.py），无 Agnes 插画、离线可跑。
+
+    要求 v2 专属配置（pages 每项带 type: cover/stats/chain/timeline/compare/vs/takeaway）；
+    旧 v1 文案配置（visual_prompt 3D 插画格式）不兼容，显式报错指路。
+    """
+    cfg_path = a.config if (a.config and os.path.exists(a.config)) else V2_DEMO
+    cfg = json.load(open(cfg_path, encoding="utf-8"))
+    pages = cfg.get("pages", [])
+    if not cfg.get("slug") or not pages or not all(isinstance(p.get("type"), str) for p in pages):
+        sys.exit(
+            "❌ --style v2 需要「表意型排版」专属配置，当前配置像是 v1 旧文案格式（Agnes 3D 插画 + 模板）。\n"
+            "   v1 格式请去掉 --style v2 直接运行；v2 格式示例见 examples/wf_agent_v2.json，\n"
+            "   直接跑演示：python run_text_tutorial.py --style v2"
+        )
+    from text_v2 import render_cfg
+    out = os.path.abspath(a.out)
+    files = render_cfg(cfg, out_dir=out)
+    print(f"[完成] v2 表意型排版共 {len(files)} 张，输出目录：{out}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="纯文案模式：结构化文案 -> 成套教程图")
-    ap.add_argument("config", nargs="?", default=DEFAULT_DEMO,
-                    help="text_config.json 路径（省略则用内置示例）")
+    ap.add_argument("config", nargs="?", default=None,
+                    help="text_config.json 路径（v1 省略则用内置示例；v2 省略则用 examples/wf_agent_v2.json）")
     ap.add_argument("--out", default="output_text", help="输出目录")
+    ap.add_argument("--style", choices=["v1", "v2"], default="v1",
+                    help="v1=经典杂志风+Agnes 3D 插画（默认，行为不变）；v2=晚秋简约表意型排版（无插画、离线可跑）")
     ap.add_argument("--no-image", action="store_true", help="跳过文生图，仅渲染排版占位")
     ap.add_argument("--no-validate", action="store_true",
                     help="跳过 visual_prompt 配置校验（默认开启：cover/每页缺 visual_prompt 会显式报错，避免生成「未生成插画」占位）")
@@ -148,7 +174,12 @@ def main():
                     help="单次生成等待上限(秒)；默认 420 覆盖 Agnes 峰值 5-6 分钟生成")
     a = ap.parse_args()
 
-    cfg_path = a.config if os.path.exists(a.config) else DEFAULT_DEMO
+    # ============ v2 分发：表意型排版引擎（与 v1 流程完全独立） ============
+    if a.style == "v2":
+        run_text_v2(a)
+        return
+
+    cfg_path = a.config if (a.config and os.path.exists(a.config)) else DEFAULT_DEMO
     cfg = json.load(open(cfg_path, encoding="utf-8"))
 
     base = os.path.abspath(a.out)
