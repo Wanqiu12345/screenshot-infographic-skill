@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、杂志风信息图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic、AI 插图、3D 插画。
 agent_created: true
-version: 1.4.0
+version: 1.5.0
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)
@@ -32,7 +32,9 @@ version: 1.4.0
 
 ## 风格选择（v1 经典 / v2 晚秋简约）
 
-截图模式支持 `--style` 参数（`python run_screenshot_tutorial.py --style v2`，不带参数默认 v1，老流程行为不变）：
+两种模式都支持 `--style` 参数（不带参数默认 v1，老流程行为不变）：
+
+**截图模式**（`python run_screenshot_tutorial.py --style v2`）：
 
 - **v1（默认）**：经典多彩风——6 功能色卡片、渐变徽章、大圆角卡片，视觉活泼，适合年轻化产品。
 - **v2**：晚秋简约风——纯排版 + 1px 细线，**无彩虹色、无渐变徽章、无重投影、无 3D 插画**。要点：
@@ -43,7 +45,17 @@ version: 1.4.0
   - 步骤区为竖向轨道 + 「STEP 标题行 / 说明行」两行结构，不靠行距撑空白。
   - 渲染器 `scripts/screenshot_v2.py`（复用 `render.py` 找浏览器，但无头渲染强制传最小环境变量——宿主注入的 `NODE_OPTIONS` 等会让 Edge 秒退）；配置由 `run_screenshot_tutorial.py --style v2` 从同一套 ITEMS/DETAILS 自动组装，环境变量与 v1 完全一致。
 
-两种模式共用同一套产品信息与功能内容配置；选哪种只改视觉语言，不改流程。纯文案模式不受此参数影响。
+**纯文案模式**（`python run_text_tutorial.py <config.json> --style v2`）：
+
+- **v1（默认）**：杂志风——每页 Agnes 文生 3D 概念插画 + 杂志排版，配色按主题/预设自动推导。
+- **v2**：表意型排版——**纯排版零插画**，视觉元素直接编码内容：竖链=因果推进、点阵=群体、纵向时间线=演进、三列对比表=差异、SVG 示意图封面。要点：
+  - 每页通过 `flex:1` 均分撑满 1080×1440，不允许底部大片真空；
+  - 主色 `primary`（默认 `#1A3A6B` 深蓝）+ 金色 `#B08D45` 小面积强调，背景暖白 `#FBFAF8`；
+  - 版式：cover / stats / chain / timeline / compare / vs_table / takeaway，按内容语义选择；
+  - 渲染器 `scripts/text_v2.py`（同截图 v2 的 SAFE_ENV 无头渲染方案）；示例配置 `examples/wf_agent_v2.json`；
+  - v2 无需 `visual_prompt`（不出插画），v1 流程的字段校验规则不变。
+
+两种模式共用同一套产品信息与功能内容配置；选哪种只改视觉语言，不改流程。
 
 ---
 
