@@ -5,78 +5,113 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:1280px;height:640px;overflow:hidden;}
-  .stage{width:1280px;height:640px;position:relative;color:#fff;
-    background:linear-gradient(120deg,#16243f 0%,#24405f 36%,#3a6a86 58%,#eaf2f6 100%);
-    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;}
-  .hero{position:absolute;left:74px;top:0;width:560px;height:640px;
-    display:flex;flex-direction:column;justify-content:center;}
-  .kicker{font-size:17px;letter-spacing:5px;color:#8fd3e8;font-weight:600;margin-bottom:20px;}
-  .title{font-family:"Noto Serif SC","Songti SC",serif;font-size:66px;font-weight:800;
-    line-height:1.12;margin-bottom:8px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
-  .title-en{font-size:25px;font-weight:600;color:#cfe6f0;letter-spacing:1px;margin-bottom:26px;}
-  .tag{font-size:22px;color:#eaf3f7;line-height:1.55;max-width:480px;}
-  .tag b{color:#ffd27a;font-weight:700;}
-  .badge{position:absolute;left:74px;bottom:40px;display:flex;gap:12px;}
-  .pill{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.14);
-    border:1px solid rgba(255,255,255,.32);padding:8px 16px;border-radius:999px;
-    font-size:16px;color:#eaf3f7;}
-  .dot{width:11px;height:11px;border-radius:50%;}
-  .dot.a{background:#3fb89b;}
-  .dot.b{background:#7a5bc0;}
-  .cards{position:absolute;right:62px;top:0;width:560px;height:640px;}
-  .card{position:absolute;border-radius:18px;overflow:hidden;background:#fff;
-    box-shadow:0 22px 55px rgba(0,0,0,.38);}
-  .card1{width:300px;height:402px;right:208px;top:118px;transform:rotate(-4deg);}
-  .card2{width:300px;height:402px;right:18px;top:150px;transform:rotate(5deg);}
-  .c1bar{height:34px;background:linear-gradient(90deg,#2a8e9e,#3fb89b);}
-  .c1body{background:#f7fafb;height:368px;padding:16px;}
-  .c1win{height:118px;border-radius:8px;margin-bottom:14px;
-    background:linear-gradient(135deg,#dfe9ef,#cddde8);box-shadow:0 2px 8px rgba(0,0,0,.08);}
-  .c1row{height:14px;border-radius:7px;background:#e3ebf0;margin-bottom:10px;}
-  .c1row.ac{background:#bfe3df;width:58%;}
-  .c1chip{display:inline-block;width:72px;height:42px;border-radius:8px;background:#fff;
-    box-shadow:0 2px 6px rgba(0,0,0,.1);margin:0 9px 9px 0;}
-  .c2bar{height:34px;background:linear-gradient(90deg,#7a5bc0,#355c9e);}
-  .c2body{background:#fff;height:368px;padding:16px;}
-  .c2hero{height:150px;border-radius:8px;margin-bottom:14px;
-    background:linear-gradient(135deg,#9b7be0,#5b7fd6);}
-  .c2title{height:22px;width:82%;border-radius:6px;background:#2c2c2c;margin-bottom:11px;}
-  .c2line{height:12px;border-radius:6px;background:#eef0f2;margin-bottom:9px;}
+  .stage{width:1280px;height:640px;position:relative;background:#FBFAF8;color:#12203C;
+    font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei',sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .stage::before{content:'';position:absolute;left:0;top:0;right:0;height:1px;background:#DED9CE;}
+
+  /* ---- 左列：文案 ---- */
+  .hero{position:absolute;left:84px;top:56px;width:600px;}
+  .kick{font-size:17px;letter-spacing:6px;font-weight:600;color:#B08D45;}
+  .title{font-size:64px;font-weight:800;line-height:1.18;letter-spacing:-3px;
+    color:#1A3A6B;margin-top:22px;}
+  .rule{width:88px;height:4px;background:#B08D45;margin:28px 0 24px;}
+  .tag{font-size:24px;line-height:1.6;color:#3E4759;max-width:560px;}
+  .tag b{color:#1A3A6B;font-weight:700;}
+  .tag .ar{color:#B08D45;font-weight:700;}
+  .pills{position:absolute;left:84px;bottom:96px;display:flex;gap:14px;}
+  .pill{display:flex;align-items:center;gap:10px;padding:11px 22px;font-size:17px;
+    letter-spacing:2px;font-weight:600;border-radius:999px;}
+  .pill.a{background:#E9EEF6;color:#1A3A6B;border:1px solid #C9D6E8;}
+  .pill.b{background:#F5EFE1;color:#8A6D2E;border:1px solid #E0D3B4;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .pill.a .dot{background:#1A3A6B;}
+  .pill.b .dot{background:#B08D45;}
+
+  /* ---- 右列：两张示意卡（纯几何微缩，无彩色投影） ---- */
+  .cards{position:absolute;right:84px;top:0;width:470px;height:640px;}
+  .card{position:absolute;background:#FFFFFF;border:1px solid #DED9CE;border-radius:14px;
+    box-shadow:0 14px 34px rgba(18,32,60,.08);overflow:hidden;}
+  .cardA{width:340px;height:400px;right:96px;top:92px;transform:rotate(-2.5deg);}
+  .cardB{width:300px;height:330px;right:6px;top:150px;transform:rotate(2deg);}
+
+  /* 卡A：截图模式 —— 终端窗口微缩 */
+  .wbar{display:flex;align-items:center;height:40px;padding:0 16px;
+    border-bottom:1px solid #EAE5DA;}
+  .wdot{width:9px;height:9px;border-radius:50%;border:1.5px solid #A6A096;margin-right:7px;}
+  .wdot.on{background:#B08D45;border-color:#B08D45;}
+  .wtitle{margin-left:auto;font-family:Consolas,'Courier New',monospace;font-size:13px;
+    letter-spacing:2px;color:#A6A096;}
+  .wbody{padding:18px;}
+  .shot{height:120px;border:1px solid #DED9CE;border-radius:8px;background:#E9EEF6;
+    position:relative;}
+  .shot .lb{position:absolute;left:12px;top:10px;
+    font-family:Consolas,monospace;font-size:12px;letter-spacing:3px;color:#2E5490;}
+  .row{height:12px;border-radius:6px;background:#EAE5DA;margin-top:14px;}
+  .row.gold{background:#C9A961;width:46%;}
+  .row.blue{background:#C9D6E8;width:64%;}
+  .chips{display:flex;gap:10px;margin-top:18px;}
+  .chip{flex:1;height:44px;border:1px solid #DED9CE;border-radius:8px;background:#FBFAF8;}
+  .chip.g{border-color:#B08D45;background:#F5EFE1;}
+
+  /* 卡B：文案模式 —— 信息图微缩 */
+  .bk{font-size:12px;letter-spacing:4px;font-weight:700;color:#B08D45;margin:22px 24px 0;}
+  .bignum{display:flex;align-items:baseline;margin:6px 24px 0;}
+  .bignum .n{font-size:84px;font-weight:800;color:#1A3A6B;letter-spacing:-4px;line-height:1;}
+  .bignum .u{font-size:22px;font-weight:700;color:#2E5490;margin-left:8px;}
+  .bl{height:11px;border-radius:5px;background:#EAE5DA;margin:12px 24px 0;}
+  .bfoot{margin:20px 24px 0;padding-top:12px;border-top:1px solid #EAE5DA;
+    font-size:12px;letter-spacing:2px;color:#A6A096;}
+
+  /* ---- 页脚 ---- */
+  .foot{position:absolute;left:84px;right:84px;bottom:34px;display:flex;
+    justify-content:space-between;align-items:center;
+    border-top:1px solid #DED9CE;padding-top:16px;
+    font-size:14px;letter-spacing:3px;color:#A6A096;}
 </style>
 </head>
 <body>
 <div class="stage">
   <div class="hero">
-    <div class="kicker">跨平台 AGENT SKILL</div>
-    <div class="title">截图教程图 & 信息图<br>配图生成器</div>
-    <div class="title-en">Screenshot &amp; Text → Infographic Generator</div>
-    <div class="tag">一张<b>截图</b> 或 一段<b>文案</b><br>→ 一整套发布级配图</div>
-    <div class="badge">
-      <span class="pill"><span class="dot a"></span>截图模式</span>
-      <span class="pill"><span class="dot b"></span>纯文案模式</span>
+    <div class="kick">跨平台 AGENT SKILL</div>
+    <div class="title">截图教程图 &amp; 信息图<br>配图生成器</div>
+    <div class="rule"></div>
+    <div class="tag">一张<b>截图</b> 或 一段<b>文案</b><br><span class="ar">→</span> 一整套<b>发布级配图</b></div>
+  </div>
+
+  <div class="pills">
+    <span class="pill a"><span class="dot"></span>截图模式</span>
+    <span class="pill b"><span class="dot"></span>纯文案模式</span>
+  </div>
+
+  <div class="cards">
+    <div class="card cardA">
+      <div class="wbar">
+        <span class="wdot"></span><span class="wdot on"></span><span class="wdot"></span>
+        <span class="wtitle">screenshot_tutorial</span>
+      </div>
+      <div class="wbody">
+        <div class="shot"><span class="lb">SCREENSHOT</span></div>
+        <div class="row blue"></div>
+        <div class="row"></div>
+        <div class="row gold"></div>
+        <div class="chips"><span class="chip"></span><span class="chip g"></span><span class="chip"></span></div>
+      </div>
+    </div>
+
+    <div class="card cardB">
+      <div class="bk">纯文案</div>
+      <div class="bignum"><span class="n">8</span><span class="u">种页型</span></div>
+      <div class="bl" style="width:82%"></div>
+      <div class="bl" style="width:64%"></div>
+      <div class="bl" style="width:74%"></div>
+      <div class="bfoot">1080 × 1440 · 晚秋简约</div>
     </div>
   </div>
-  <div class="cards">
-    <div class="card card1">
-      <div class="c1bar"></div>
-      <div class="c1body">
-        <div class="c1win"></div>
-        <div class="c1row ac"></div>
-        <div class="c1row"></div>
-        <div class="c1row" style="width:74%"></div>
-        <div class="c1chip"></div><div class="c1chip"></div><div class="c1chip"></div>
-      </div>
-    </div>
-    <div class="card card2">
-      <div class="c2bar"></div>
-      <div class="c2body">
-        <div class="c2hero"></div>
-        <div class="c2title"></div>
-        <div class="c2line" style="width:90%"></div>
-        <div class="c2line" style="width:80%"></div>
-        <div class="c2line" style="width:85%"></div>
-      </div>
-    </div>
+
+  <div class="foot">
+    <span>晚秋AI日记 · 晚秋简约风</span>
+    <span>完全离线 · 只依赖 PILLOW</span>
   </div>
 </div>
 </body>
