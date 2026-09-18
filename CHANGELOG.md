@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.0.0 (2026-09-18)
+
+### 破坏性变更：移除 v1 模式，单轨化「晚秋简约」引擎
+
+- **`--style` 参数移除**：两个入口（`run_text_tutorial.py` / `run_screenshot_tutorial.py`）不再有 v1/v2 之分，直接走晚秋简约渲染器（`text_v2.py` / `screenshot_v2.py`）。旧 v1 配置（`visual_prompt` 格式）不再兼容。
+- **v1 全链路删除**（-2996 行）：`fill_template.py`、`generate_text_images.py`、`agnes_image.py`（Agnes 3D 插画）、`color_system.py`、`crop_region.py`、`ocr_locate.py`、`extract_favicon.py`、`extract_theme.py`、`templates/` 全部 HTML 模板、`references/` 旧设计文档、`examples/jinan_drg_*` v1 示例。保留 `render.py`（浏览器查找 + SAFE_ENV，被两个 v2 渲染器复用）与 `social_post.py`（赠品文案）。
+- **依赖精简**：`requirements.txt` 只剩 Pillow；两种模式均为纯排版渲染，**完全离线可跑**，不依赖任何图片生成 API 与 OCR。
+- **README / README_EN / CONTRIBUTING 重写**：全部对齐单轨现实（v1 的 Agnes、OCR、templates、references、`--style` 等说明已清除），确保用户拿到即可照做。
+
+### 新增
+
+- **文案模式新页型 `flow`**：终端窗口框（圆点 + 等宽字标签 + 右上角 tag）+ 金色直角分叉连接线 + 概率条（最高项自动强调）+ 选项块（支持 `{text, note}` 注释行）。三种拼法：输入分叉双窗口（冲突对比）、输入 + 选项块（举例）、双窗口直接对比（机制分析）；支持 `mid` 中段文字与 `after`/`after_gray`/`note` 通用底部字段。
+- **封面新增 `net: "branch"` 示意图**（一个输入分叉成两种输出）与 `title_size` 字段（长标题降字号）。
+- **文案模式入口新增 `--only`**：按页面 name 或文件名只渲染单页，调试用。
+- 版面铁律入文档：卡片/窗口高度内容自适应 + 最小高度；密度不够时补叙事内容而非拉大间距。
+
+### 修复
+
+- flow 页选项块拼法中间大片真空（spacer 分配不均）；概率条小数值渲染成小黑点（轨道加粗、填充加深）；双窗口拼法内容飘空（不再 flex 无限撑高）。
+- `install.py` 验证步骤对齐单轨（导入 render + social_post）。
+
 ## 1.5.0 (2026-09-01)
 
 - **纯文案模式新增 `--style v2`「表意型排版」**：纯排版零插画，视觉元素直接编码内容（竖链=因果、点阵=群体、时间线=演进、三列对比=差异、SVG 示意图封面）；每页 flex 撑满 1080×1440 不留白。渲染器 `scripts/text_v2.py`，示例配置 `examples/wf_agent_v2.json` + 4 张 v2 成图进 `examples/`。

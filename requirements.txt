@@ -1,2 +1,1 @@
 Pillow>=10.0.0
-rapidocr-onnxruntime>=1.2.0

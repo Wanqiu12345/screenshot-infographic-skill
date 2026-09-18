@@ -98,18 +98,17 @@ def main():
 
     # 5. 验证关键脚本
     print("[→] 验证关键脚本...")
-    example_shot = ROOT / "examples" / "screenshot.png"
-    if example_shot.exists():
-        run([str(python), str(ROOT / "scripts" / "extract_theme.py"), str(example_shot)])
-    else:
-        run([str(python), "-c", "import scripts.extract_theme; import scripts.color_system; print('import ok')"])
-        print("[!] 未找到 examples/screenshot.png，仅完成导入验证")
+    run([str(python), "-c",
+         "import sys; sys.path.insert(0, r'%s'); "
+         "import render; import social_post; import text_v2; import screenshot_v2; "
+         "print('import ok: render / social_post / text_v2 / screenshot_v2')"
+         % str(ROOT / "scripts")])
 
     banner("安装完成")
     print("使用方式：")
-    print(f"  1. 激活虚拟环境: {VENV}")
-    print("  2. 修改 run_screenshot_tutorial.py 中的截图路径与品牌信息")
-    print("  3. 运行: python run_screenshot_tutorial.py")
+    print("  1. 文案模式演示:  python run_text_tutorial.py")
+    print("  2. 截图模式演示:  python run_screenshot_tutorial.py")
+    print("  3. 或直接在对话里对 AI 说「用 screenshot-infographic-skill 给 XX 做一套配图」")
 
 
 if __name__ == "__main__":

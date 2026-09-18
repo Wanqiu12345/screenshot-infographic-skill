@@ -18,7 +18,7 @@ article_26（1200 agent 事件）/ article_27（Workflow vs Agent）即该引擎
 
 v2_config.json 结构（见 examples/wf_agent_v2.json）：
     slug / footer_brand(可选，默认 晚秋AI日记) /
-    pages[{type: cover|stats|chain|timeline|compare|vs|takeaway, name, ...版式字段}]
+    pages[{type: cover|stats|chain|timeline|compare|vs|takeaway|flow, name, ...版式字段}]
 """
 import json
 import math
@@ -185,6 +185,52 @@ html,body{background:__BG__;}
 .tk .lim .h{font-size:17px;letter-spacing:4px;font-weight:700;color:__BRAND__;}
 .tk .lim p{font-size:22px;line-height:1.62;color:__INK2__;margin-top:10px;}
 
+/* ================= flow：终端窗口 + 连接线 + 概率条 ================= */
+.fl{flex:1;min-height:0;display:flex;flex-direction:column;}
+.fl .win{background:#FFFFFF;border:1.5px solid __LINE__;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.fl .bar{display:flex;align-items:center;height:54px;padding:0 24px;border-bottom:1px solid __LINE2__;flex:0 0 auto;}
+.fl .bar .dots{display:flex;gap:7px;}
+.fl .bar .dots i{width:9px;height:9px;border-radius:50%;background:#CDC7B8;}
+.fl .bar .lb{margin-left:14px;font-family:Consolas,'Courier New',monospace;font-size:15px;letter-spacing:2.5px;color:#8A8578;}
+.fl .bar .tg{margin-left:auto;font-family:Consolas,'Courier New',monospace;font-size:15px;letter-spacing:2.5px;color:__GOLD__;}
+.fl .bd{flex:1;min-height:0;padding:28px 32px;display:flex;flex-direction:column;}
+.fl .in .bd{justify-content:center;align-items:center;padding:34px;}
+.fl .in .q{font-size:34px;font-weight:800;letter-spacing:-.5px;text-align:center;}
+.fl .in .s{font-size:20px;color:__INK_SOFT__;margin-top:12px;text-align:center;}
+.fl .conn{flex:0 0 auto;}
+.fl .duo{flex:0 0 auto;display:flex;gap:30px;}
+.fl .cell{flex:1;min-width:0;display:flex;flex-direction:column;}
+.fl .cell .win{flex:1;min-height:400px;}
+.fl .cap{flex:0 0 auto;margin-top:18px;font-size:24px;font-weight:700;color:__INK2__;text-align:center;}
+.fl .cap.b{color:__BRAND__;}
+.fl .txt{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;}
+.fl .txt p{font-size:26px;color:__INK2__;line-height:1.6;}
+.fl .txt .fb{display:flex;align-items:center;gap:6px;margin-top:12px;}
+.fl .txt .fb .tr{width:230px;height:10px;border-radius:5px;background:#EBE7DB;}
+.fl .txt .fb .cu{width:14px;height:10px;background:__GOLD__;}
+.fl .bars{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;}
+.fl .bars .row{display:flex;align-items:center;gap:16px;}
+.fl .bars .nm{width:112px;font-size:24px;font-weight:700;flex:0 0 auto;}
+.fl .bars .tr{flex:1;height:14px;border-radius:7px;background:#EBE7DB;overflow:hidden;}
+.fl .bars .fi{height:100%;border-radius:7px;background:__INK2__;}
+.fl .bars .vl{width:52px;text-align:right;font-family:Consolas,'Courier New',monospace;font-size:20px;color:__INK_SOFT__;flex:0 0 auto;}
+.fl .bars .row.hot .nm,.fl .bars .row.hot .vl{color:__BRAND__;}
+.fl .bars .row.hot .fi{background:__BRAND__;}
+.fl .bnote{font-size:17px;color:__FAINT__;}
+.fl .mid{flex:0 0 auto;}
+.fl .mid p{font-size:24px;color:__INK2__;line-height:1.7;}
+.fl .mid p+p{margin-top:8px;}
+.fl .mid+.chips{margin-top:26px;}
+.fl .chips{display:flex;gap:24px;flex:0 0 auto;}
+.fl .chips .cp2{flex:1;border:1.5px solid __LINE__;border-radius:10px;background:#FFFFFF;padding:24px 20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.fl .chips .cp2 .ct{font-size:29px;font-weight:700;}
+.fl .chips .cp2 .cn{font-size:18px;color:__INK_SOFT__;text-align:center;line-height:1.5;}
+.fl .after{flex:0 0 auto;}
+.fl .after p{font-size:24px;color:__INK2__;line-height:1.7;}
+.fl .after p.g{color:__INK_SOFT__;font-size:20px;margin-top:12px;}
+.fl .after p.fnote{font-size:17px;color:__FAINT__;margin-top:18px;}
+
 /* ================= 收尾条 ================= */
 .eb{margin-top:26px;background:__BRAND__;color:#fff;border-radius:2px;
   padding:28px 36px;font-size:24px;line-height:1.6;font-weight:600;flex:0 0 auto;}
@@ -249,8 +295,60 @@ def agent_network(cols=12, rows=6, w=912, h=330, hub_at=(5.5, 2.5)):
 
 
 # ==========================================================
+# 表意型 SVG：同一个输入，两种输出（用于「判断型模型」主题封面）
+#   顶部：问题条 —— 金色分叉线 —— 左：文本段（大模型）右：概率条（判断模型）
+# ==========================================================
+def branch_svg(w=912, h=380):
+    T = TOKENS
+    mid = w / 2.0
+    s = ['<svg width="%d" height="%d" viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">'
+         % (w, h, w, h)]
+    s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,sans-serif">')
+
+    # 顶部问题条
+    qw, qh, qx, qy = 400, 66, mid - 200, 0
+    s.append('<rect x="%.0f" y="%d" width="%d" height="%d" rx="10" fill="#FFFFFF" '
+             'stroke="%s" stroke-width="1.5"/>' % (qx, qy, qw, qh, T["line"]))
+    s.append('<text x="%.0f" y="%d" font-size="24" font-weight="700" text-anchor="middle" '
+             'fill="%s">同一个输入</text>' % (mid, qy + 42, T["ink"]))
+
+    # 分叉线：问题条底部 → 左右两个输出区
+    ly = qy + qh + 34
+    lx_r, lx_l = mid + 218, mid - 218
+    s.append('<path d="M%.0f %d V%d M%.0f %d H%.0f M%.0f %d V%d M%.0f %d V%d" '
+             'fill="none" stroke="%s" stroke-width="2.6"/>'
+             % (mid, qy + qh, ly - 16, lx_l, ly - 16, lx_r,
+                lx_l, ly - 16, ly + 22, lx_r, ly - 16, ly + 22, T["gold"]))
+
+    # 左：文本输出（大模型）
+    tx, tw = lx_l - 150, 300
+    s.append('<text x="%.0f" y="%d" font-size="16" letter-spacing="4" font-weight="700" '
+             'text-anchor="middle" fill="%s">TEXT OUT</text>' % (lx_l, ly + 52, T["ink_soft"]))
+    for i, (ow, op) in enumerate([(250, 0.75), (280, 0.55), (190, 0.75)]):
+        s.append('<rect x="%.0f" y="%d" width="%d" height="16" rx="4" fill="%s" opacity="%.2f"/>'
+                 % (lx_l - ow / 2, ly + 74 + i * 34, ow, T["brand"], op))
+    s.append('<rect x="%.0f" y="%d" width="70" height="14" rx="3" fill="%s" opacity="0.85"/>'
+             % (lx_l - 145, ly + 74 + 3 * 34, T["gold"]))
+
+    # 右：判断输出（概率条）
+    s.append('<text x="%.0f" y="%d" font-size="16" letter-spacing="4" font-weight="700" '
+             'text-anchor="middle" fill="%s">DECISION</text>' % (lx_r, ly + 52, T["ink_soft"]))
+    bw_max = 260
+    for i, frac in enumerate([0.86, 0.31, 0.12]):
+        ry = ly + 72 + i * 34
+        hot = i == 0
+        s.append('<rect x="%.0f" y="%d" width="%d" height="18" rx="4" fill="%s"/>'
+                 % (lx_r - bw_max / 2, ry, bw_max, T["line2"]))
+        s.append('<rect x="%.0f" y="%d" width="%.0f" height="18" rx="4" fill="%s"/>'
+                 % (lx_r - bw_max / 2, ry, bw_max * frac, T["brand"] if hot else T["ink_soft"]))
+    s.append('</g></svg>')
+    return "".join(s)
+
+
+# ==========================================================
 # 表意型 SVG：固定路径 vs 自主循环
 #   左：一串单向方块 —— 路径在写代码时就定死了
+
 #   右：中心模型 + 环形回路 —— 下一步由模型自己决定
 # ==========================================================
 def flow_vs_loop(w=912, h=380):
@@ -346,6 +444,8 @@ def p_cover(c, page_index=0, total=5):
     n = c.get("net", True)
     if n == "flow":
         net = '<div class="net">%s</div>' % flow_vs_loop()
+    elif n == "branch":
+        net = '<div class="net">%s</div>' % branch_svg()
     elif isinstance(n, dict):
         net = '<div class="net">%s</div>' % agent_network(**n)
     elif n:
@@ -353,13 +453,16 @@ def p_cover(c, page_index=0, total=5):
     else:
         net = ""
     sub = ('<div class="sub">%s</div>' % c["subtitle"]) if c.get("subtitle") else ""
+    tt_style = ' style="font-size:%s"' % c["title_size"] if c.get("title_size") else ""
+    tt = '<div class="tt"%s>%s</div>' % (tt_style, "<br>".join(c["title_lines"]))
     cards = "".join('<div class="sc"><div class="h">%s</div><div class="t">%s</div>'
                     '<div class="d">%s</div></div>' % (x["h"], x["t"], x["d"])
                     for x in c.get("sum", []))
     sum_html = ('<div class="sum">%s</div>' % cards) if cards else ""
     en = "LATE FALL AI DIARY" if FBRAND == "晚秋AI日记" else FBRAND
+    tt = '<div class="tt"%s>%s</div>' % (tt_style, "<br>".join(c["title_lines"]))
     return ('<div class="cv"><div class="cl"><span>%s · %s</span><span>%s</span></div>%s'
-            '<div class="tt">%s</div>%s<div class="mid">%s</div>%s<div class="rule"></div>'
+            '%s%s<div class="mid">%s</div>%s<div class="rule"></div>'
             '<div class="bot"><span>%s</span><span>第 01 / %02d 页</span></div></div>'
             % (en, FBRAND, c.get("date", ""), kick, tt, sub, net, sum_html,
                c.get("note", ""), total))
@@ -442,8 +545,107 @@ def p_takeaway(p):
                  fill=True, endbar=p.get("endbar"))
 
 
+# ==========================================================
+# flow：终端窗口 + 直角连接线 + 概率条 + 选项块
+#   三种拼法（参考「结构化输出」版式，2026-09-18 增）：
+#   a) input 窗口 → 连接分叉 → 左右两个子窗口（文本 vs 概率条）
+#   b) input 窗口 → 选项块 chips（候选集摆上台面）
+#   c) 无 input，左右两个窗口直接对比
+# ==========================================================
+def _flow_win(label, tag, body, extra_cls=""):
+    tg = ('<span class="tg">%s</span>' % tag) if tag else ""
+    return ('<div class="win %s"><div class="bar"><span class="dots"><i></i><i></i><i></i></span>'
+            '<span class="lb">%s</span>%s</div><div class="bd">%s</div></div>'
+            % (extra_cls, label, tg, body))
+
+
+def _flow_body(k):
+    kind = k.get("kind", "text")
+    if kind == "text":
+        ps = "".join("<p>%s</p>" % x for x in k["lines"])
+        if k.get("fakebar"):
+            ps += '<div class="fb"><div class="tr"></div><div class="cu"></div></div>'
+        return '<div class="txt">%s</div>' % ps
+    if kind == "bars":
+        rows = []
+        for b in k["bars"]:
+            w = b.get("w", b["v"])
+            rows.append('<div class="row%s"><div class="nm">%s</div>'
+                        '<div class="tr"><div class="fi" style="width:%s%%"></div></div>'
+                        '<div class="vl">%s</div></div>'
+                        % (" hot" if b.get("hot") else "", b["name"], w, b["v"]))
+        note = ('<div class="bnote">%s</div>' % k["note"]) if k.get("note") else ""
+        return '<div class="bars">%s</div>%s' % ("".join(rows), note)
+    return ""
+
+
+def p_flow(p):
+    T = TOKENS
+    parts = ['<div class="fl">']
+    inp = p.get("input")
+    kids = p.get("children")
+    chips = p.get("chips")
+    if inp:
+        body = '<div class="q">%s</div>' % inp["title"]
+        if inp.get("sub"):
+            body += '<div class="s">%s</div>' % inp["sub"]
+        parts.append(_flow_win(inp.get("label", "YOUR QUESTION"),
+                               inp.get("tag", "INPUT"), body, "in"))
+    if kids:
+        if inp:
+            parts.append('<svg class="conn" width="912" height="64" viewBox="0 0 912 64" '
+                         'xmlns="http://www.w3.org/2000/svg">'
+                         '<path d="M456 0 V32 M220 32 H692 M220 32 V64 M692 32 V64" '
+                         'fill="none" stroke="%s" stroke-width="3"/></svg>' % T["gold"])
+        else:
+            # 无 input 的直接对比拼法：窗口前也放一段弹性留白，避免内容全挤在顶部
+            parts.append('<div style="flex:0.8"></div>')
+        cells = []
+        for k in kids:
+            cap = ""
+            if k.get("caption"):
+                cap = ('<div class="cap%s">%s</div>'
+                       % (" b" if k.get("hot_cap") else "", k["caption"]))
+            cells.append('<div class="cell">%s%s</div>'
+                         % (_flow_win(k.get("label", ""), k.get("tag", ""),
+                                      _flow_body(k)), cap))
+        parts.append('<div class="duo">%s</div>' % "".join(cells))
+    if kids and p.get("mid"):
+        parts.append('<div style="flex:0.8"></div>')
+        parts.append('<div class="mid">%s</div>' % "".join('<p>%s</p>' % m for m in p["mid"]))
+    if chips:
+        parts.append('<div style="flex:1"></div>')
+        if p.get("mid"):
+            parts.append('<div class="mid">%s</div>' % "".join('<p>%s</p>' % m for m in p["mid"]))
+            parts.append('<div style="flex:1"></div>')
+        cells = []
+        for c in chips:
+            if isinstance(c, dict):
+                cells.append('<div class="cp2"><div class="ct">%s</div>%s</div>'
+                             % (c["text"],
+                                ('<div class="cn">%s</div>' % c["note"]) if c.get("note") else ""))
+            else:
+                cells.append('<div class="cp2"><div class="ct">%s</div></div>' % c)
+        parts.append('<div class="chips">%s</div>' % "".join(cells))
+    after = p.get("after")
+    note = p.get("note")
+    if after or note:
+        parts.append('<div style="flex:1"></div>')
+        block = ""
+        if after:
+            block += "".join('<p>%s</p>' % a for a in after)
+            if p.get("after_gray"):
+                block += '<p class="g">%s</p>' % p["after_gray"]
+        if note:
+            block += '<p class="fnote">%s</p>' % note
+        parts.append('<div class="after">%s</div>' % block)
+    parts.append("</div>")
+    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""), "".join(parts),
+                 fill=False, endbar=p.get("endbar"))
+
+
 BUILDERS = {"cover": p_cover, "stats": p_stats, "chain": p_chain, "timeline": p_timeline,
-            "compare": p_compare, "vs": p_vs, "takeaway": p_takeaway}
+            "compare": p_compare, "vs": p_vs, "takeaway": p_takeaway, "flow": p_flow}
 
 
 def render_cfg(cfg, out_dir=None, only=None):
