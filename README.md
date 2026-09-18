@@ -264,7 +264,7 @@ screenshot-infographic-skill/
 ├── run_screenshot_tutorial.py    # 截图模式：命令行入口
 ├── run_text_tutorial.py          # 纯文案模式：命令行入口
 ├── scripts/
-│   ├── text_v2.py                # 纯文案模式渲染器（表意型排版，7 种页型）
+│   ├── text_v2.py                # 纯文案模式渲染器（表意型排版，8 种页型）
 │   ├── screenshot_v2.py          # 截图模式渲染器（晚秋简约风）
 │   ├── render.py                 # 无头浏览器渲染 PNG（含 SAFE_ENV 环境隔离）
 │   ├── social_post.py            # 随图附赠小红书发布文案

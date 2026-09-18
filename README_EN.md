@@ -110,7 +110,7 @@ screenshot-infographic-skill/
 ├── run_text_tutorial.py          # Text mode entry
 ├── install.py                    # One-command installer
 ├── scripts/
-│   ├── text_v2.py                # Text mode renderer (7 page types)
+│   ├── text_v2.py                # Text mode renderer (8 page types)
 │   ├── screenshot_v2.py          # Screenshot mode renderer
 │   ├── render.py                 # Headless browser rendering (SAFE_ENV)
 │   ├── social_post.py            # Bonus social-media copy generator
