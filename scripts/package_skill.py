@@ -18,10 +18,24 @@ OUT = os.path.join(OUT_DIR, "screenshot-infographic-skill.zip")
 
 EXCLUDE_DIRS = {
     ".git", "__pycache__", "output", "output_text", "output_screenshot",
-    "scratch", ".workbuddy", "release", "dist", "assets",
+    "scratch", ".workbuddy", "release", "dist",
     "node_modules", ".venv", "venv", "build", "tmp",
 }
 EXCLUDE_EXT = {".pyc", ".pyo", ".zip", ".log"}
+
+# examples 下「示例成图」只服务于 README 展示，不必进分发包；
+# 但 examples/screenshot.png 是 run_screenshot_tutorial.py 的默认演示输入，
+# 必须随包发出，否则用户解压后跑演示会直接「找不到截图」。
+_EXAMPLE_OUTPUT_PREFIX = ("00_", "01_", "02_", "03_", "04_", "05_")
+_EXAMPLE_OUTPUT_EXTRA = ("wf_agent_v2_",)
+
+
+def _is_example_showcase(rel: str) -> bool:
+    """examples 下的图现在全部随包发出（README 用它做效果预览）。
+
+    保留该函数是为了以后需要瘦身时有单一开关。
+    """
+    return False
 
 
 def should_exclude(rel: str) -> bool:
@@ -29,8 +43,10 @@ def should_exclude(rel: str) -> bool:
     # 运行时产物目录（以 output_ 开头等）一律排除
     if any(p in EXCLUDE_DIRS or p.startswith("output_") for p in parts):
         return True
-    # 示例大图仅用于仓库展示，分发包剔除以减小体积（install.py 对缺失为软校验）
-    if "examples" in parts and rel.lower().endswith(".png"):
+    # 下划线开头的目录视为临时调试产物（如 _verify_color / _prof / _html），不进分发包
+    if any(p.startswith("_") and p != "__pycache__" for p in parts[:-1]):
+        return True
+    if _is_example_showcase(rel):
         return True
     return os.path.splitext(rel)[1].lower() in EXCLUDE_EXT
 

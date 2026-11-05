@@ -24,14 +24,22 @@ def main():
     ap.add_argument("config", nargs="?", default=None,
                     help="配置 JSON 路径（省略则跑内置演示 examples/wf_agent_v2.json）")
     ap.add_argument("--out", default="output_text", help="输出目录")
-    ap.add_argument("--only", default=None,
-                    help="只渲染指定页面（按 name 或文件名匹配，调试用）")
+    ap.add_argument("--only", nargs="*", default=None,
+                    help="只渲染指定页面（按 00_xxx 形式匹配，可传多个）")
     a = ap.parse_args()
 
-    cfg_path = a.config if (a.config and os.path.exists(a.config)) else V2_DEMO
+    # 显式传了配置路径就必须按它跑：以前路径写错会静默回退到内置演示，
+    # 用户看到「共 6 张」以为自己的配置生效了，其实渲染的是别人的示例。
+    if a.config:
+        if not os.path.exists(a.config):
+            sys.exit("❌ 找不到配置文件：%s\n"
+                     "   想跑内置演示请不要传参数：python run_text_tutorial.py" % a.config)
+        cfg_path = a.config
+    else:
+        cfg_path = V2_DEMO
     if not os.path.exists(cfg_path):
         sys.exit(f"[!] 找不到配置文件：{cfg_path}")
-    cfg = json.load(open(cfg_path, encoding="utf-8"))
+    cfg = json.load(open(cfg_path, encoding="utf-8-sig"))
     pages = cfg.get("pages", [])
     if not cfg.get("slug") or not pages or not all(isinstance(p.get("type"), str) for p in pages):
         sys.exit(

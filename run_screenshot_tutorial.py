@@ -184,7 +184,32 @@ def build_config():
     }
 
 
+def _check_pillow():
+    """截图模式要用 Pillow 裁局部放大图；跳过 install.py 直接跑时给出人话提示。"""
+    r = subprocess.run([PY, "-c", "import PIL"], capture_output=True)
+    if r.returncode != 0:
+        sys.exit(
+            "❌ 缺少 Pillow（截图裁剪依赖它）。\n"
+            "   请先运行安装脚本：python install.py\n"
+            "   它会创建隔离的 .venv 并装好 Pillow，不会污染系统环境。\n"
+            "   已装过但报这个错，通常是 .venv 损坏 —— 删掉本目录下的 .venv 后重跑 install.py。")
+
+
 def main():
+    if not SCREENSHOT.exists():
+        sys.exit(
+            "❌ 找不到截图：%s\n\n"
+            "截图模式必须有一张产品截图作为输入。两种办法：\n"
+            "  1) 用你自己的截图（推荐）：\n"
+            "       Windows :  set SCREENSHOT=D:\\path\\to\\your.png\n"
+            "       macOS/Linux: export SCREENSHOT=/path/to/your.png\n"
+            "     然后再执行 python run_screenshot_tutorial.py\n"
+            "  2) 跑自带演示：确认 examples/screenshot.png 存在。\n"
+            "     若你是从 zip 安装的而该文件缺失，说明包不完整，请重新下载 release 附件。\n"
+            % SCREENSHOT)
+
+    _check_pillow()
+
     print("[1/3] 组装配置（品牌色从截图自动推导）...")
     cfg = build_config()
     cfg_path = OUT / "screenshot_config.json"
@@ -208,9 +233,11 @@ def main():
     print(f"       标题：{post['title']}（{post['title_len']} 字）｜备选：{' / '.join(post['alt_titles'])}")
 
     print("\n[✓] 完成！输出在:", OUT)
-    for name in ["00_cover.png", "01_overview.png", "02_chat_gen.png", "03_import_doc.png",
-                 "04_chart_type.png", "05_export.png"]:
-        print("   -", name)
+    # 按实际产物列出，不写死文件名（改了 DETAILS 之后不会印错）
+    for name in ["00_cover.png", "01_overview.png"] + [
+            "%02d_%s.png" % (d["idx"], d["slug"]) for d in DETAILS]:
+        if (OUT / name).exists():
+            print("   -", name)
 
 
 if __name__ == "__main__":

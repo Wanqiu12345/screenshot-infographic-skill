@@ -23,22 +23,21 @@ v2_config.json 结构（见 examples/wf_agent_v2.json）：
 import json
 import math
 import os
+import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
+from html import escape as _html_escape
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from render import find_browser  # noqa: E402  复用浏览器查找逻辑
+from render import find_browser, esc, esc_cfg, safe_env, file_url  # noqa: E402
 
-# Edge 无头截图必须跑在「最小环境」下
-SAFE_ENV = {
-    "PATH": os.environ.get("PATH", ""),
-    "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
-    "TEMP": os.environ.get("TEMP", ""),
-    "TMP": os.environ.get("TMP", ""),
-    "USERPROFILE": os.environ.get("USERPROFILE", ""),
-}
+# 无头浏览器的最小环境（实现见 render.safe_env，跨平台通用：
+# Windows 需要 SYSTEMROOT/TEMP/USERPROFILE，macOS/Linux 需要 HOME/TMPDIR/LANG）
+SAFE_ENV = safe_env()
 
 TOKENS = {
     "bg": "#FBFAF8", "ink": "#12203C", "ink2": "#3E4759", "ink_soft": "#6C7686",
@@ -52,12 +51,12 @@ TOKENS = {
 FBRAND = "晚秋AI日记"
 
 CSS = """
-*{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;overflow-wrap:anywhere;}
 html,body{background:__BG__;}
 .page{
   width:1080px;height:1440px;background:__BG__;color:__INK__;
   padding:72px 84px 52px;display:flex;flex-direction:column;position:relative;overflow:hidden;
-  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei',sans-serif;
+  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif;
   -webkit-font-smoothing:antialiased;
 }
 
@@ -82,7 +81,7 @@ html,body{background:__BG__;}
 /* ================= 封面 ================= */
 .cv{width:1080px;height:1440px;background:__BG__;color:__INK__;position:relative;overflow:hidden;
   padding:72px 84px 58px;display:flex;flex-direction:column;
-  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei',sans-serif;}
+  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif;}
 .cv .cl{display:flex;justify-content:space-between;align-items:baseline;
   font-size:17px;letter-spacing:6px;font-weight:600;color:__FAINT__;flex:0 0 auto;}
 .cv .kick{font-size:19px;letter-spacing:5px;color:__GOLD__;font-weight:600;margin-top:48px;flex:0 0 auto;}
@@ -304,7 +303,7 @@ def branch_svg(w=912, h=380, q="同一个输入", left="TEXT OUT", right="DECISI
     mid = w / 2.0
     s = ['<svg width="%d" height="%d" viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">'
          % (w, h, w, h)]
-    s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,sans-serif">')
+    s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,Noto Sans CJK SC,sans-serif">')
 
     # 顶部问题条
     qw = max(400, len(q) * 26 + 80)
@@ -370,7 +369,7 @@ def flow_vs_loop(w=912, h=380):
              '<path d="M0,0 L10,5 L0,10 z" fill="%s"/></marker>'
              '</defs>' % (T["brand2"], T["gold2"]))
 
-    s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,sans-serif">')
+    s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,Noto Sans CJK SC,sans-serif">')
 
     # 栏目标题
     s.append('<text x="0" y="24" font-size="17" letter-spacing="5" font-weight="700" '
@@ -478,7 +477,7 @@ def p_stats(p):
         rows.append('<div class="st"><div class="big">%s<span class="unit">%s</span></div>'
                     '<div class="side"><div class="lab">%s</div><div class="note">%s</div></div></div>'
                     % (it[0], it[1], it[2], it[3]))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""), "".join(rows), fill=True, endbar=p.get("endbar"))
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""), "".join(rows), fill=True, endbar=p.get("endbar"))
 
 
 def p_chain(p):
@@ -492,7 +491,7 @@ def p_chain(p):
                     '<div class="dot%s"></div></div>'
                     '<div class="cnt"><div class="t">%s</div>%s%s</div></div>'
                     % (last, s[0], d, d2))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""),
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""),
                  '<div class="chain-wrap">%s</div>' % "".join(rows), fill=True, endbar=p.get("endbar"))
 
 
@@ -505,7 +504,7 @@ def p_timeline(p):
                      '<div class="card"><div class="dt">%s</div>'
                      '<div class="tt">%s</div><div class="ds">%s</div></div></div>'
                      % (key, it["dt"], it["tt"], it["ds"]))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""),
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""),
                  '<div class="tl">%s</div>' % "".join(nodes),
                  fill=True, endbar=p.get("endbar"))
 
@@ -522,7 +521,7 @@ def p_compare(p):
             '<div class="col b"><div class="lb">%s</div><ul>%s</ul></div></div>'
             % (p["left_label"], "".join(_cp_item(x) for x in p["left_items"]),
                p["right_label"], "".join(_cp_item(x) for x in p["right_items"])))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""), body, fill=True, endbar=p.get("endbar"))
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""), body, fill=True, endbar=p.get("endbar"))
 
 
 def p_vs(p):
@@ -534,7 +533,7 @@ def p_vs(p):
                     '<div class="wf"><div class="m">%s</div><div class="s">%s</div></div>'
                     '<div class="ag"><div class="m">%s</div><div class="s">%s</div></div></div>'
                     % (it["dim"], it["wf"], it["wf_s"], it["ag"], it["ag_s"]))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""),
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""),
                  '<div class="vs">%s</div>' % "".join(rows), fill=True, endbar=p.get("endbar"))
 
 
@@ -544,7 +543,7 @@ def p_takeaway(p):
     if p.get("limit"):
         lim = ('<div class="lim"><div class="h">%s</div><p>%s</p></div>'
                % (p["limit"][0], p["limit"][1]))
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""),
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""),
                  '<div class="tk"><div class="hl">%s</div>%s%s</div>' % (p["highlight"], ps, lim),
                  fill=True, endbar=p.get("endbar"))
 
@@ -644,12 +643,39 @@ def p_flow(p):
             block += '<p class="fnote">%s</p>' % note
         parts.append('<div class="after">%s</div>' % block)
     parts.append("</div>")
-    return _page(p["meta"], p["pg"], p["title"], p.get("lead", ""), "".join(parts),
+    return _page(p.get("meta", ""), p.get("pg", ""), p["title"], p.get("lead", ""), "".join(parts),
                  fill=False, endbar=p.get("endbar"))
 
 
 BUILDERS = {"cover": p_cover, "stats": p_stats, "chain": p_chain, "timeline": p_timeline,
             "compare": p_compare, "vs": p_vs, "takeaway": p_takeaway, "flow": p_flow}
+
+# 各页型除 title 外的必填字段（渲染前统一校验，避免用户拿到裸 KeyError + traceback）
+_REQUIRED = {
+    "stats": ("items",), "chain": ("steps",), "timeline": ("nodes",),
+    "compare": ("left_items", "right_items"), "vs": ("rows",),
+    "takeaway": ("paras",), "flow": (),
+}
+
+
+def validate_cfg(cfg):
+    """把「第 N 页 type=xxx 缺 yyy」这类人话报错提前到渲染之前。"""
+    pages = cfg.get("pages")
+    if not isinstance(pages, list) or not pages:
+        raise SystemExit("❌ 配置里没有 pages，或 pages 是空数组")
+    for i, p in enumerate(pages, 1):
+        if not isinstance(p, dict) or p.get("type") not in BUILDERS:
+            bad = p.get("type") if isinstance(p, dict) else type(p).__name__
+            raise SystemExit("❌ 第 %d 页的 type=%r 不认识。可用：%s"
+                             % (i, bad, "/".join(sorted(BUILDERS))))
+        typ = p["type"]
+        if typ == "cover":
+            continue
+        if "title" not in p:
+            raise SystemExit("❌ 第 %d 页（type=%s）缺少必填字段 'title'" % (i, typ))
+        for f in _REQUIRED[typ]:
+            if not p.get(f):
+                raise SystemExit("❌ 第 %d 页（type=%s）缺少必填字段 %r，或该字段为空" % (i, typ, f))
 
 
 def render_cfg(cfg, out_dir=None, only=None):
@@ -659,6 +685,8 @@ def render_cfg(cfg, out_dir=None, only=None):
     """
     global FBRAND
     FBRAND = cfg.get("footer_brand") or "晚秋AI日记"
+    validate_cfg(cfg)
+    cfg = esc_cfg(cfg)
 
     if out_dir is None:
         out_dir = os.path.join(os.path.dirname(SCRIPT_DIR), "output_text")
@@ -674,8 +702,11 @@ def render_cfg(cfg, out_dir=None, only=None):
             '<style>%s</style></head><body>' % _css(CSS))
 
     files = []
+    failed = []
+    planned = []
     for i, p in enumerate(cfg["pages"]):
         name = "%02d_%s" % (i, p.get("name", p["type"]))
+        planned.append(name)
         if only and name not in only:
             continue
         typ = p["type"]
@@ -689,17 +720,43 @@ def render_cfg(cfg, out_dir=None, only=None):
         op = os.path.join(out_dir, "%s.png" % name)
         if os.path.exists(op):
             os.remove(op)
-        subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                        "--no-sandbox", "--disable-dev-shm-usage",
-                        "--user-data-dir=%s" % os.path.join(out_dir, "_prof", name),
-                        "--force-device-scale-factor=2", "--window-size=1080,1440",
-                        "--default-background-color=00000000",
-                        "--screenshot=%s" % op, "file:///" + hp.replace("\\", "/")],
-                       capture_output=True, timeout=180, env=SAFE_ENV)
-        ok = os.path.exists(op)
+        # 每页用独立临时 profile，用完即删：以前写死在 out_dir/_prof 会留 7MB/页，
+        # 一页超时能留下 400MB+ 的残骸。
+        userdir = tempfile.mkdtemp(prefix="txtv2_")
+        try:
+            proc = subprocess.run(
+                [browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+                 "--no-sandbox", "--disable-dev-shm-usage",
+                 "--user-data-dir=%s" % userdir,
+                 "--force-device-scale-factor=2", "--window-size=1080,1440",
+                 "--default-background-color=00000000",
+                 "--screenshot=%s" % op, file_url(hp)],
+                capture_output=True, timeout=180, env=SAFE_ENV)
+        except subprocess.TimeoutExpired:
+            failed.append(name)
+            print("  %-30s TIMEOUT" % name)
+            continue
+        finally:
+            shutil.rmtree(userdir, ignore_errors=True)
+        # 退出码与文件体积一起看，避免「浏览器崩了但旧图还在」被当成成功
+        ok = proc.returncode == 0 and os.path.exists(op) and os.path.getsize(op) > 0
         print("  %-30s %s" % (name, "OK" if ok else "FAIL"))
         if ok:
             files.append(op)
+        else:
+            failed.append(name)
+
+    # --only 写了配置里不存在的页名时以前是静默出 0 张，用户以为成功了
+    if only:
+        miss = [n for n in only if n not in planned]
+        if miss:
+            raise SystemExit("❌ --only 里有配置中不存在的页名：%s\n   可用页名：%s"
+                             % (", ".join(miss), ", ".join(planned)))
+    if not files:
+        raise SystemExit("❌ 没有渲染出任何页面，请检查配置与浏览器")
+    if failed:
+        raise SystemExit("❌ %d 张渲染失败：%s\n   HTML 中间产物在 %s，可单独用浏览器打开排查"
+                         % (len(failed), ", ".join(failed), hdir))
     return files
 
 
@@ -710,7 +767,7 @@ def main():
     ap.add_argument("--out", default=None, help="输出目录（默认 <skill根>/output_text）")
     ap.add_argument("--only", nargs="*", default=None, help="只渲染指定页，如 00_cover 03_五个差别")
     a = ap.parse_args()
-    cfg = json.load(open(a.content, encoding="utf-8"))
+    cfg = json.load(open(a.content, encoding="utf-8-sig"))
     t0 = time.time()
     print("[%s]" % cfg.get("slug", "?"))
     fs = render_cfg(cfg, a.out, a.only)

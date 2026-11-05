@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](requirements.txt)
-[![Version](https://img.shields.io/badge/version-2.0.3-1A3A6B.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.5-1A3A6B.svg)](CHANGELOG.md)
 
 ![Cover](assets/cover.png)
 
@@ -29,11 +29,32 @@ Visual style is "late-autumn minimal": a single brand color (auto-derived from y
 
 ### Mode 1: Screenshot → Feature tutorial
 
-Send a product screenshot + a feature description. Returns a minimal cover, an overview (features broken into cards), and per-feature detail pages (auto-cropped regions, zoomed in). Brand color is auto-derived from the screenshot's dominant color.
+Send a product screenshot + a feature description. Returns a minimal cover, an overview (features broken into cards), and per-feature detail pages (auto-cropped regions, zoomed in). Brand color is auto-derived from the screenshot's dominant color, and the light/dark theme follows the screenshot's average brightness.
 
 ### Mode 2: Text → Infographic
 
 Send a topic or copy. The AI structures it into pages and renders them with "semantic layouts" — visual elements that encode meaning: vertical chains = causality, timelines = evolution, comparison tables = differences, terminal-window flow diagrams (with connector lines, probability bars, option chips), big-number pages, and takeaway pages.
+
+**8 page types**, chosen by what the content means — not a template library:
+
+| `stats` big numbers | `timeline` |
+|---|---|
+| ![stats](examples/page_stats.png) | ![timeline](examples/page_timeline.png) |
+
+| `flow` terminal-window comparison |
+|---|
+| ![flow](examples/page_flow.png) |
+
+Plus `cover`, `chain` (vertical causality), `compare` (two-column), `vs` (row-by-row table), `takeaway` (closing verdict).
+Field reference in [SKILL.md](SKILL.md); runnable minimal config in [examples/all_page_types.json](examples/all_page_types.json).
+
+## Who it's for (and who it isn't)
+
+**Good fit:** indie developers who need a feature-tour set without a designer; writers producing 5–10 consistent portrait images per article; anyone who **cannot upload screenshots or drafts to an online service** (intranet, NDA, regulated environments); people who want to script the pipeline (JSON config in, CLI out).
+
+**Not a fit:** anyone expecting "type a sentence, get a beautiful AI illustration" — this tool does **not generate illustrations**, it typesets; teams needing drag-and-drop editing, multiplayer, or share links (use Scribe / Canva instead); people who need a million-template library — we ship 8 page types, enough but not fancy.
+
+The trade-off is deliberate: **trading template count for text that never renders wrong, pixel-precise layout, and offline reproducibility.** For an infographic, the text and numbers *are* the product — exactly where generative models are least reliable.
 
 ## Installation
 
@@ -80,7 +101,8 @@ python run_text_tutorial.py my_config.json --out my_output_dir
 python run_text_tutorial.py my_config.json --out my_output_dir --only 03_page_name   # single page for debugging
 
 # Screenshot mode: brand info via env vars
-SCREENSHOT=/path/to/your.png BRAND_NAME="Your Product" python run_screenshot_tutorial.py
+SCREENSHOT=/path/to/your.png BRAND_NAME="Your Product" BRAND_URL=https://your.site/ python run_screenshot_tutorial.py
+# Don't skip BRAND_URL: otherwise the browser bar in the overview page keeps the demo URL
 ```
 
 Config field reference for text mode lives in [SKILL.md](SKILL.md); a working example is [examples/wf_agent_v2.json](examples/wf_agent_v2.json).
@@ -99,7 +121,8 @@ Key technical points:
 - **Brand color auto-derivation**: dominant screenshot color desaturated and darkened into a single brand color (screenshot mode).
 - **Semantic layouts**: pages fill 1080×1440 via `flex:1` — no large empty areas.
 - **SAFE_ENV headless rendering**: minimal environment variables passed to the browser, avoiding crashes caused by injected `NODE_OPTIONS` / `ELECTRON_RUN_AS_NODE` in host environments.
-- **Editable HTML kept**: every PNG has its HTML source preserved (`_html/` inside the output dir) for easy re-rendering after tweaks.
+- **Editable HTML kept**: text mode writes HTML sources to `_html/` inside the output dir; screenshot mode keeps its HTML, `crop_*.png`, `screenshot_config.json` and `theme_tokens.json` in the output root. Re-run to re-render after edits.
+- **No API key, no network**: the skill never calls an image-generation model. If you need illustrations, let the host AI client (e.g. WorkBuddy's ImageGen) produce them and let this skill handle layout only — credentials stay with the client.
 
 ## Repository layout
 
@@ -119,6 +142,14 @@ screenshot-infographic-skill/
 └── examples/                     # Demo inputs and outputs
 ```
 
+## Known limitations
+
+1. **System fonts** → minor line-break differences across OSes (never clipping). Generate a set on one machine.
+2. **Sparse content leaves white space** — give each page at least 3–4 items.
+3. **No online editor** — edit JSON/HTML and re-render.
+4. **PNG only** — no SVG/PDF/PPT export.
+5. **Up to 180 s per page**, no progress output. Normal pages take 2–16 s.
+
 ## Notes & gotchas
 
 - **A Chromium-based browser is required** for rendering. On headless Linux servers, install one first (`sudo apt-get install -y chromium` on Debian/Ubuntu). `render.py` auto-detects and passes `--no-sandbox` / `--disable-dev-shm-usage` for containers.
@@ -131,10 +162,19 @@ screenshot-infographic-skill/
 A: 1080×1440 portrait 3:4, rendered at 2× (2160×2880).
 
 **Q: Can I customize colors?**
-A: Screenshot mode derives the brand color from your screenshot automatically. Text mode defaults to deep blue `#1A3A6B` + gold; override with the `primary` field in the config JSON.
+A: Screenshot mode derives the brand color from your screenshot automatically. Text mode uses a fixed palette (deep blue `#1A3A6B` + matte gold `#B08D45` + warm white `#FBFAF8`) defined in `TOKENS` inside `scripts/text_v2.py`; the config JSON cannot override it, which keeps a series of images visually consistent.
 
 **Q: Does it need internet or an image-generation API?**
-A: No. Since v2.0.0 both modes are pure typographic rendering — fully offline after install.
+A: No. Both modes are pure typographic rendering — fully offline after install, and your screenshots or drafts never leave your machine.
+
+**Q: Why not use an image-generation model?**
+A: Because infographics are made of exact text and numbers. Generative models misdraw letters and digits, cannot guarantee consistent typography across a 12-page set, and give different output for the same input. We render HTML/CSS/SVG through a headless browser instead — the same approach as Vercel Satori and Puppeteer. The cost is a fixed layout library; the benefit is that not a single character renders wrong.
+
+**Q: Slight layout differences between two machines?**
+A: Known limitation. Rendering uses system fonts (YaHei on Windows / PingFang on macOS / Noto on Linux), so line breaks shift a little. Nothing gets clipped, but generate a whole set on one machine.
+
+**Q: Can I get SVG / PDF / PPT?**
+A: Not yet — PNG only.
 
 **Q: Images have blank areas or misplacement?**
 A: Check your config JSON field names first (e.g. timeline uses `nodes`, not `events`; chain `steps` are arrays, not dicts). Full reference in [SKILL.md](SKILL.md).

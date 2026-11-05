@@ -5,6 +5,77 @@
 自动查找 Edge / Chrome / Chromium。
 """
 import sys, os, subprocess, tempfile, shutil, glob
+import re
+from html import escape as _html_escape
+
+
+# ==========================================================
+# 文本转义（两个渲染器共用）
+# ==========================================================
+# 允许保留的少量排版标签（历史配置用过 <b>/<em>），其余标签一律丢弃。
+_SAFE_TAGS = ("b", "strong", "em", "i", "br")
+# 必须匹配到完整的 `>` 才算标签：否则 "<script>" 只吃掉 "<script"，
+# 会在页面上留下孤零零的 ">"，而保留的 "<b" 又少了闭合符会把后面正文吞掉。
+_TAG_RE = re.compile(r"<\s*(/?)\s*([a-zA-Z][a-zA-Z0-9]*)([^<>]*)>")
+_TOKEN = "\x01%d\x01"
+
+
+def esc(s):
+    """转义配置文本，避免 <script>、未闭合标签把页面撑坏或让渲染卡死。
+
+    白名单标签（b/strong/em/i/br）整体原样保留，其他完整标签丢弃，
+    剩下的 & < > 全部转义。纯文本（含 "a < b"、2<3 这类比较符）不受影响。
+    """
+    if not isinstance(s, str):
+        return s
+    kept = []
+
+    def _keep(m):
+        if m.group(2).lower() in _SAFE_TAGS:
+            kept.append(m.group(0))
+            return _TOKEN % (len(kept) - 1)
+        return ""
+
+    s = _TAG_RE.sub(_keep, s)
+    s = _html_escape(s)
+    for i, tag in enumerate(kept):
+        s = s.replace(_TOKEN % i, tag)
+    return s
+
+
+def esc_cfg(obj):
+    """递归转义整份配置里的所有字符串（颜色值 / type / name 转义后不变）。"""
+    if isinstance(obj, str):
+        return esc(obj)
+    if isinstance(obj, list):
+        return [esc_cfg(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: esc_cfg(v) for k, v in obj.items()}
+    return obj
+
+
+def safe_env():
+    """无头浏览器所需的「最小环境」。
+
+    Windows 依赖 SYSTEMROOT/TEMP/USERPROFILE，macOS/Linux 依赖 HOME/TMPDIR/LANG；
+    只保留 Windows 那套会让 Linux 上的浏览器找不到配置目录、字体回退异常。
+    """
+    keys = ("PATH", "SYSTEMROOT", "TEMP", "TMP", "TMPDIR", "USERPROFILE",
+            "HOME", "LANG", "LC_ALL", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
+    env = {k: os.environ[k] for k in keys if os.environ.get(k)}
+    env.setdefault("PATH", os.environ.get("PATH", ""))
+    return env
+
+
+def file_url(path):
+    """生成跨平台 file:// URL（POSIX 下 pathlib 会正确处理 4 个斜杠问题）。"""
+    p = os.path.abspath(path)
+    try:
+        from pathlib import Path
+        return Path(p).as_uri()
+    except ValueError:  # 极少数非标准路径兜底
+        return "file:///" + p.replace("\\", "/")
+
 
 
 def find_browser():

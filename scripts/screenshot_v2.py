@@ -37,15 +37,10 @@ from PIL import Image
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_ROOT = os.path.dirname(SCRIPT_DIR)
 sys.path.insert(0, SCRIPT_DIR)
-from render import find_browser  # noqa: E402  复用浏览器查找逻辑
+from render import find_browser, esc_cfg, safe_env, file_url  # noqa: E402
 
-SAFE_ENV = {
-    "PATH": os.environ.get("PATH", ""),
-    "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
-    "TEMP": os.environ.get("TEMP", ""),
-    "TMP": os.environ.get("TMP", ""),
-    "USERPROFILE": os.environ.get("USERPROFILE", ""),
-}
+# 无头浏览器的最小环境（实现见 render.safe_env，跨平台通用）
+SAFE_ENV = safe_env()
 
 GOLD = "#B08D45"
 GOLD2 = "#C9A961"
@@ -59,26 +54,49 @@ def _hsl_to_hex(h, s, v):
     return "#%02X%02X%02X" % (round(r * 255), round(g * 255), round(b * 255))
 
 
-def pick_accent(img_path, default="#1A3A6B"):
+def _pixels(im):
+    """兼容 Pillow 12/14：getdata() 在 Pillow 14 移除。"""
+    if hasattr(im, "get_flattened_data"):
+        return im.get_flattened_data()
+    return im.getdata()
+
+
+def _rgb(hx):
+    hx = hx.lstrip("#")
+    return [int(hx[i:i + 2], 16) for i in (0, 2, 4)]
+
+
+def _mix(hx1, hx2, t):
+    """把 hx1 按比例 t 混进 hx2（t 越大越接近 hx1）。"""
+    a, b = _rgb(hx1), _rgb(hx2)
+    return "#%02X%02X%02X" % tuple(round(a[i] * t + b[i] * (1 - t)) for i in range(3))
+
+
+def pick_accent(img_path, default="#1A3A6B", v=0.34, s_cap=0.60):
+    """从截图里挑主色相，再压成可用作品牌色的深色。
+
+    v / s_cap 需要按主题分别给：浅色主题压在 v=0.34（够深才压得住暖白底），
+    深色主题要抬到 v=0.62（否则和 #151A22 的底糊在一起看不见）。
+    """
     im = Image.open(img_path).convert("RGB").resize((72, 72))
     cand = []
-    for r, g, b in im.getdata():
-        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-        if s > 0.30 and 0.15 < v < 0.95:
-            cand.append((h, s, v))
+    for r, g, b in _pixels(im):
+        h, s, val = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+        if s > 0.30 and 0.15 < val < 0.95:
+            cand.append((h, s, val))
     if len(cand) < 40:
         return default
-    buckets = collections.Counter(int(h * 36) for h, s, v in cand)
+    buckets = collections.Counter(int(h * 36) for h, s, v_ in cand)
     hb = buckets.most_common(1)[0][0]
     sel = [x for x in cand if int(x[0] * 36) == hb]
     h = sum(x[0] for x in sel) / len(sel)
-    s = min(0.58, sum(x[1] for x in sel) / len(sel) + 0.08)
-    return _hsl_to_hex(h, s, 0.28)
+    s = min(s_cap, sum(x[1] for x in sel) / len(sel) + 0.10)
+    return _hsl_to_hex(h, s, v)
 
 
 def is_dark(img_path):
     im = Image.open(img_path).convert("L").resize((48, 48))
-    px = list(im.getdata())
+    px = list(_pixels(im))
     return sum(px) / len(px) < 110
 
 
@@ -98,18 +116,20 @@ def build_tokens(img_path):
         base = {
             "bg": "#151A22", "ink": "#E8ECF3", "ink2": "#C2CAD8", "ink_soft": "#8B95A7",
             "line": "#333B49", "line2": "#272E3A", "card": "#1B212B",
-            "brand": pick_accent(img_path, "#7FA3D8"),
+            "brand": pick_accent(img_path, "#7FA3D8", v=0.62, s_cap=0.55),
         }
-        base["brand2"] = _lighten(base["brand"], 0.16)
-        base["brand_tint"] = "#20293A"
+        base["brand2"] = _lighten(base["brand"], 0.14)
+        base["brand_soft"] = _mix(base["brand"], base["bg"], 0.42)
+        base["brand_tint"] = _mix(base["brand"], base["card"], 0.20)
     else:
         base = {
             "bg": "#FBFAF8", "ink": "#12203C", "ink2": "#3E4759", "ink_soft": "#6C7686",
             "line": "#DED9CE", "line2": "#EAE5DA", "card": "#FFFFFF",
-            "brand": pick_accent(img_path, "#1A3A6B"),
+            "brand": pick_accent(img_path, "#1A3A6B", v=0.34, s_cap=0.60),
         }
-        base["brand2"] = _lighten(base["brand"], 0.18)
-        base["brand_tint"] = "#F1EEE6"
+        base["brand2"] = _lighten(base["brand"], 0.16)
+        base["brand_soft"] = _mix(base["brand"], base["bg"], 0.34)
+        base["brand_tint"] = _mix(base["brand"], base["bg"], 0.10)
     return base
 
 
@@ -120,14 +140,17 @@ html,body{background:__BG__;}
 .page{
   width:1080px;height:1440px;background:__BG__;color:__INK__;
   padding:72px 84px 52px;display:flex;flex-direction:column;position:relative;overflow:hidden;
-  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei',sans-serif;
+  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif;
   -webkit-font-smoothing:antialiased;
 }
+/* 顶部品牌条：整页最稳定的「主题色跟随」信号 */
+.page::before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:__BRAND__;}
 .hd{display:flex;justify-content:space-between;align-items:baseline;
   font-size:17px;letter-spacing:5px;font-weight:600;flex:0 0 auto;}
 .hd .tag{color:__GOLD__;}
 .hd .pg{color:__INK_SOFT__;font-weight:500;letter-spacing:3px;opacity:.7;}
-.h2{font-size:54px;font-weight:800;line-height:1.18;margin-top:32px;letter-spacing:-2px;flex:0 0 auto;}
+.h2{font-size:54px;font-weight:800;line-height:1.18;margin-top:32px;letter-spacing:-2px;
+  flex:0 0 auto;color:__BRAND__;}
 .lead{font-size:23px;color:__INK_SOFT__;line-height:1.6;margin-top:14px;max-width:900px;flex:0 0 auto;}
 .body{margin-top:34px;flex:1;min-height:0;display:flex;flex-direction:column;}
 .foot{margin-top:auto;padding-top:18px;display:flex;justify-content:space-between;align-items:center;
@@ -146,13 +169,13 @@ html,body{background:__BG__;}
 
 /* ================= 概览：功能拆解（表格化，无彩虹色） ================= */
 .ov-hd{display:flex;align-items:baseline;gap:18px;margin-top:32px;flex:0 0 auto;}
-.ov-hd .t{font-size:30px;font-weight:800;letter-spacing:1px;}
-.ov-hd .n{font-size:18px;color:__GOLD__;font-weight:700;letter-spacing:3px;}
-.ov-hd .ln{flex:1;height:1px;background:__LINE__;}
+.ov-hd .t{font-size:30px;font-weight:800;letter-spacing:1px;color:__BRAND__;}
+.ov-hd .n{font-size:18px;color:__BRAND__;font-weight:700;letter-spacing:3px;}
+.ov-hd .ln{flex:1;height:1px;background:__BRAND_SOFT__;}
 .ov-list{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;
   grid-auto-rows:1fr;column-gap:56px;margin-top:10px;}
 .ov-it{display:flex;align-items:center;gap:22px;border-bottom:1px solid __LINE__;}
-.ov-it .no{font-size:40px;font-weight:800;color:__GOLD__;letter-spacing:-1px;
+.ov-it .no{font-size:40px;font-weight:800;color:__BRAND__;letter-spacing:-1px;
   width:64px;flex:0 0 auto;line-height:1;}
 .ov-it .tx{flex:1;min-width:0;}
 .ov-it .tx h3{font-size:26px;font-weight:700;letter-spacing:-.5px;}
@@ -168,7 +191,7 @@ html,body{background:__BG__;}
   margin-top:26px;}
 .stp .row{flex:1;min-height:0;display:flex;gap:22px;align-items:center;}
 .stp .rail{position:relative;width:22px;height:100%;flex:0 0 auto;}
-.stp .rail .ln{position:absolute;left:10px;top:0;bottom:0;width:1px;background:__LINE__;}
+.stp .rail .ln{position:absolute;left:10px;top:0;bottom:0;width:1px;background:__BRAND_SOFT__;}
 .stp .row:last-child .rail .ln{bottom:auto;height:50%;}
 .stp .row:first-child .rail .ln{top:50%;bottom:0;}
 .stp .rail .dot{position:absolute;left:0;width:20px;height:20px;border-radius:50%;
@@ -189,11 +212,13 @@ html,body{background:__BG__;}
 /* ================= 封面 ================= */
 .cv{width:1080px;height:1440px;background:__BG__;color:__INK__;position:relative;overflow:hidden;
   padding:72px 84px 58px;display:flex;flex-direction:column;
-  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei',sans-serif;}
+  font-family:'PingFang SC','HarmonyOS Sans SC','Source Han Sans SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif;}
+.cv::before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:__BRAND__;}
 .cv .cl{display:flex;justify-content:space-between;align-items:baseline;
   font-size:17px;letter-spacing:6px;font-weight:600;color:__INK_SOFT__;opacity:.8;flex:0 0 auto;}
 .cv .kick{font-size:19px;letter-spacing:5px;color:__GOLD__;font-weight:600;margin-top:44px;flex:0 0 auto;}
-.cv .tt{font-size:88px;font-weight:800;line-height:1.12;letter-spacing:-4px;margin-top:18px;flex:0 0 auto;}
+.cv .tt{font-size:88px;font-weight:800;line-height:1.12;letter-spacing:-4px;margin-top:18px;
+  flex:0 0 auto;color:__BRAND__;}
 .cv .sub{font-size:28px;color:__INK2__;font-weight:600;line-height:1.5;margin-top:26px;
   letter-spacing:-.5px;max-width:860px;flex:0 0 auto;}
 .cv .mid{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;}
@@ -269,13 +294,18 @@ def p_overview(cfg, total):
 
 def p_detail(cfg, d, out_dir, total):
     x, y, w, h = d["coords"]
+    # coords 是归一化比例，越界或退化（宽/高为 0）会让 crop 抛错或除零，
+    # 这里统一夹到 [0,1] 并保证至少 1px，宁可裁得难看也不要中途崩掉。
+    x, y = min(max(float(x), 0.0), 1.0), min(max(float(y), 0.0), 1.0)
+    w, h = min(max(float(w), 0.0), 1.0 - x), min(max(float(h), 0.0), 1.0 - y)
     im = Image.open(cfg["screenshot"]).convert("RGB")
     W, H = im.size
-    box = (round(x * W), round(y * H), round((x + w) * W), round((y + h) * H))
-    frag = im.crop(box)
+    left, top = round(x * W), round(y * H)
+    right, bottom = max(left + 1, round((x + w) * W)), max(top + 1, round((y + h) * H))
+    frag = im.crop((left, top, min(right, W), min(bottom, H)))
     # 小控件碎片（按钮/工具条）放大到可读高度，最多 2 倍
     fw, fh = frag.size
-    if fh < 300:
+    if 0 < fh < 300:
         k = min(2.0, 300.0 / fh)
         frag = frag.resize((round(fw * k), round(fh * k)), Image.LANCZOS)
     crop = os.path.join(out_dir, "crop_%s.png" % d["slug"])
@@ -313,18 +343,22 @@ def render_page(html_body, T, out_png):
     browser = find_browser()
     if not browser:
         raise RuntimeError("未找到 Chromium 内核浏览器（Edge / Chrome / Chromium）")
+    # 先删旧图：否则浏览器崩了、旧图还在，会被误判成这次渲染成功
+    if os.path.exists(out_png):
+        os.remove(out_png)
     userdir = tempfile.mkdtemp(prefix="shotv2_")
     try:
-        subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                        "--no-sandbox", "--disable-dev-shm-usage",
-                        "--user-data-dir=%s" % userdir,
-                        "--force-device-scale-factor=2", "--window-size=1080,1440",
-                        "--default-background-color=00000000",
-                        "--screenshot=%s" % out_png, "file:///" + hp.replace("\\", "/")],
-                       capture_output=True, timeout=180, env=SAFE_ENV)
+        proc = subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+                               "--no-sandbox", "--disable-dev-shm-usage",
+                               "--user-data-dir=%s" % userdir,
+                               "--force-device-scale-factor=2", "--window-size=1080,1440",
+                               "--default-background-color=00000000",
+                               "--screenshot=%s" % out_png, file_url(hp)],
+                              capture_output=True, timeout=180, env=SAFE_ENV)
     finally:
         shutil.rmtree(userdir, ignore_errors=True)
-    return os.path.exists(out_png)
+    return (proc.returncode == 0 and os.path.exists(out_png)
+            and os.path.getsize(out_png) > 0)
 
 
 def render_all(cfg):
@@ -335,7 +369,14 @@ def render_all(cfg):
     if not os.path.exists(cfg["screenshot"]):
         raise SystemExit("找不到截图: " + cfg["screenshot"])
 
-    T = build_tokens(cfg["screenshot"])
+    # 转义所有文案字段（防 <script>、未闭合标签撑坏页面或让渲染卡死），
+    # 路径字段必须在转义后还原，否则含 & 的路径会被转成 &amp; 找不到文件。
+    shot_path, out_cfg = cfg["screenshot"], cfg.get("out_dir")
+    cfg = esc_cfg(cfg)
+    cfg["screenshot"] = shot_path
+    cfg["out_dir"] = out_cfg or out_dir
+
+    T = build_tokens(shot_path)
     print("品牌色(取自截图): %s | 深色主题: %s" % (T["brand"], is_dark(cfg["screenshot"])))
     with open(os.path.join(out_dir, "theme_tokens.json"), "w", encoding="utf-8") as f:
         json.dump(T, f, ensure_ascii=False, indent=2)
@@ -362,7 +403,7 @@ def render_all(cfg):
 
 def main():
     cfg_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(SKILL_ROOT, "output", "v2_config.json")
-    with open(cfg_path, encoding="utf-8") as f:
+    with open(cfg_path, encoding="utf-8-sig") as f:
         cfg = json.load(f)
     render_all(cfg)
 

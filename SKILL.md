@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、名词科普配图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic。
 agent_created: true
-version: 2.0.3
+version: 2.0.5
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)
@@ -20,6 +20,23 @@ version: 2.0.3
 
 > v2.0.0 起移除旧版 v1 流程（杂志风模板 + Agnes 3D 插画 + OCR 定位）与 `--style` 参数，
 > 全部走「晚秋简约风」渲染器。旧 v1 配置（`visual_prompt` 格式）不再兼容。
+
+## 运行依赖（不需要任何 API Key）
+
+本 skill 全程本地渲染：结构化内容 → Python 拼 HTML/CSS/SVG → 系统浏览器无头截屏 → PNG（2160×2880）。
+**不调用任何 AI 生图模型、不联网、不携带任何密钥**，所以装完就能出图，不存在「没有 key 生成不了图」的问题。
+
+需要三样东西：
+
+1. **Python 3.10+**
+2. **Pillow** —— `install.py` 自动装进本目录的 `.venv`，不污染系统环境
+3. **Chromium 内核浏览器** —— Windows 自带 Edge 即可、macOS 用 Chrome、Linux 装 `chromium`
+
+`install.py` 会逐项检查并给出可照做的提示；三样齐了就能跑，无需注册任何账号。
+
+**需要 AI 插画时**：由宿主 Agent 的 ImageGen 能力出图，本 skill 只负责版式与合成，密钥由客户端持有。
+v1 曾内置免费模型 key 直接生图，实测三个硬伤（文字必然乱码、3:4 插画被固定槽位裁掉主体、
+峰值 5–6 分钟导致超时误杀），故 v2 起不再内置——信息图要求文字精确、版式可控，这两点恰恰是生图模型给不了的。
 
 ## 两种模式
 
@@ -31,7 +48,11 @@ version: 2.0.3
 - `01_overview.png` 总体概览（截图嵌顶部窗口，下方表格化拆解功能）
 - `02~N_<功能>.png` 功能细节页（局部放大 + 步骤 + 价值/场景）
 
-品牌色从截图主色自动推导（降饱和、压暗），金色 `#B08D45` 只做小面积强调；深浅主题随截图自动判定。
+品牌色从截图主色自动推导（取出现最多的色相，降饱和、按主题压明度），
+注入到会「一眼看见」的位置：整页顶部品牌条、内容页大标题、概览页「功能拆解」标题与
+01–06 编号、细节页步骤竖线、封面大标题。金色 `#B08D45` 退到强调位（页眉栏目、STEP 小标、
+说明框左边线），不再承担主结构。深浅主题随截图平均亮度自动判定：
+浅色底 `v=0.34`、深色底 `v=0.62`（深底上不提亮度会糊成一片）。
 配置由脚本从 ITEMS/DETAILS 常量自动组装，品牌信息用环境变量覆盖：
 `BRAND_NAME` / `BRAND_URL` / `BRAND_SUBTITLE` / `BRAND_CATEGORY` / `SCREENSHOT`。
 渲染器 `scripts/screenshot_v2.py`。
@@ -42,16 +63,16 @@ version: 2.0.3
 竖链=因果推进、点阵=群体、纵向时间线=演进、三列对比表=差异、SVG 示意图封面。
 渲染器 `scripts/text_v2.py`；示例配置 `examples/wf_agent_v2.json`。
 
-每页通过 `flex:1` 均分撑满 1080×1440，不允许底部大片真空；主色 `primary`（默认 `#1A3A6B` 深蓝）
+每页通过 `flex:1` 均分撑满 1080×1440，不允许底部大片真空；主色固定 `#1A3A6B` 深蓝
 + 金色 `#B08D45` 小面积强调，背景暖白 `#FBFAF8`。
 
 #### 页面类型（type 字段）
 
-除 `cover` 外，每个内容页都支持通用字段：`meta`（页眉栏目）/ `pg`（页码）/ `title` / `lead`（导语）/ `endbar`（底部结论条）。
+除 `cover` 外，每个内容页的通用字段：`title`（**必填**）/ `meta`（页眉栏目，建议填）/ `pg`（页码，建议填）/ `lead`（导语）/ `endbar`（底部结论条）。`meta` / `pg` 缺省时页眉留空；各页型的必填字段见下表，缺了会在渲染前报「第 N 页（type=xxx）缺少必填字段 yyy」，不会渲到一半崩掉。
 
 | type | 用途 | 关键字段 |
 |---|---|---|
-| `cover` | 封面（SVG 示意图 + 大标题） | `title_lines` / `subtitle` / `net` / `net_labels` / `title_size` / `sum` / `note` / `date` / `total` |
+| `cover` | 封面（SVG 示意图 + 大标题） | `title_lines` / `subtitle` / `net` / `net_labels` / `title_size` / `sum` / `note` / `date` |
 | `stats` | 大数字页 | `items: [[大数字, 单位, 标签, 注释], ...]`（四元组） |
 | `chain` | 竖向因果链 | `steps: [[标题, 说明, 补充], ...]`（数组，非字典） |
 | `timeline` | 纵向时间线 | `nodes: [{dt, tt, ds, key}]`（注意是 `nodes` 不是 `events`；`key: true` 高亮节点） |
