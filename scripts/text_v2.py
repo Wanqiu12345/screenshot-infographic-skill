@@ -113,14 +113,14 @@ html,body{background:__BG__;}
 .st .note{font-size:22px;color:__INK_SOFT__;line-height:1.6;margin-top:10px;}
 
 /* ================= 因果链 chain：五步均分撑满 ================= */
-.chain-wrap{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;}
-.ch{flex:1;min-height:0;display:flex;gap:26px;align-items:center;}
+.chain-wrap{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;}
+.ch{flex:0 0 auto;display:flex;gap:26px;align-items:center;}
 .ch .rail{position:relative;width:26px;height:100%;flex:0 0 auto;}
 .ch .rail .ln{position:absolute;left:12px;top:0;bottom:0;width:1px;background:__LINE__;}
 .ch .rail .dot{position:absolute;left:0;width:24px;height:24px;border-radius:50%;
   background:__BRAND__;top:50%;margin-top:-12px;}
 .ch .rail .dot.last{background:__GOLD__;width:28px;height:28px;left:-2px;margin-top:-14px;}
-.ch .cnt{flex:1;min-width:0;}
+.ch .cnt{flex:1;min-width:0;padding:44px 0;}
 .ch .t{font-size:31px;font-weight:700;line-height:1.3;letter-spacing:-.5px;}
 .ch .q{font-size:21px;color:__INK2__;line-height:1.55;margin-top:8px;
   padding-left:18px;border-left:3px solid __GOLD2__;font-style:italic;}
@@ -147,7 +147,7 @@ html,body{background:__BG__;}
 .cp .lb{font-size:17px;letter-spacing:5px;font-weight:700;color:__FAINT__;
   padding-bottom:18px;border-bottom:2px solid __LINE__;flex:0 0 auto;}
 .cp .col.b .lb{color:__BRAND__;border-bottom-color:__GOLD__;}
-.cp .col ul{flex:1;display:flex;flex-direction:column;justify-content:space-between;margin-top:18px;}
+.cp .col ul{flex:1;display:flex;flex-direction:column;justify-content:center;gap:52px;margin-top:18px;}
 .cp li{list-style:none;display:flex;flex-direction:column;justify-content:center;min-height:0;}
 .cp li .m{font-size:25px;line-height:1.4;color:__INK2__;}
 .cp li .s{font-size:19px;color:__FAINT__;line-height:1.5;margin-top:7px;}
@@ -298,7 +298,8 @@ def agent_network(cols=12, rows=6, w=912, h=330, hub_at=(5.5, 2.5)):
 # 表意型 SVG：同一个输入，两种输出（用于「判断型模型」主题封面）
 #   顶部：问题条 —— 金色分叉线 —— 左：文本段（大模型）右：概率条（判断模型）
 # ==========================================================
-def branch_svg(w=912, h=380):
+def branch_svg(w=912, h=380, q="同一个输入", left="TEXT OUT", right="DECISION"):
+    """一个输入分叉成两种输出。标签可用 cover.net_labels 覆盖，默认沿用「文本 vs 判断」语义。"""
     T = TOKENS
     mid = w / 2.0
     s = ['<svg width="%d" height="%d" viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">'
@@ -306,11 +307,12 @@ def branch_svg(w=912, h=380):
     s.append('<g font-family="PingFang SC,HarmonyOS Sans SC,Microsoft YaHei,sans-serif">')
 
     # 顶部问题条
-    qw, qh, qx, qy = 400, 66, mid - 200, 0
-    s.append('<rect x="%.0f" y="%d" width="%d" height="%d" rx="10" fill="#FFFFFF" '
+    qw = max(400, len(q) * 26 + 80)
+    qh, qx, qy = 66, mid - qw / 2.0, 0
+    s.append('<rect x="%.0f" y="%d" width="%.0f" height="%d" rx="10" fill="#FFFFFF" '
              'stroke="%s" stroke-width="1.5"/>' % (qx, qy, qw, qh, T["line"]))
     s.append('<text x="%.0f" y="%d" font-size="24" font-weight="700" text-anchor="middle" '
-             'fill="%s">同一个输入</text>' % (mid, qy + 42, T["ink"]))
+             'fill="%s">%s</text>' % (mid, qy + 42, T["ink"], q))
 
     # 分叉线：问题条底部 → 左右两个输出区
     ly = qy + qh + 34
@@ -323,7 +325,7 @@ def branch_svg(w=912, h=380):
     # 左：文本输出（大模型）
     tx, tw = lx_l - 150, 300
     s.append('<text x="%.0f" y="%d" font-size="16" letter-spacing="4" font-weight="700" '
-             'text-anchor="middle" fill="%s">TEXT OUT</text>' % (lx_l, ly + 52, T["ink_soft"]))
+             'text-anchor="middle" fill="%s">%s</text>' % (lx_l, ly + 52, T["ink_soft"], left))
     for i, (ow, op) in enumerate([(250, 0.75), (280, 0.55), (190, 0.75)]):
         s.append('<rect x="%.0f" y="%d" width="%d" height="16" rx="4" fill="%s" opacity="%.2f"/>'
                  % (lx_l - ow / 2, ly + 74 + i * 34, ow, T["brand"], op))
@@ -332,7 +334,7 @@ def branch_svg(w=912, h=380):
 
     # 右：判断输出（概率条）
     s.append('<text x="%.0f" y="%d" font-size="16" letter-spacing="4" font-weight="700" '
-             'text-anchor="middle" fill="%s">DECISION</text>' % (lx_r, ly + 52, T["ink_soft"]))
+             'text-anchor="middle" fill="%s">%s</text>' % (lx_r, ly + 52, T["ink_soft"], right))
     bw_max = 260
     for i, frac in enumerate([0.86, 0.31, 0.12]):
         ry = ly + 72 + i * 34
@@ -445,7 +447,9 @@ def p_cover(c, page_index=0, total=5):
     if n == "flow":
         net = '<div class="net">%s</div>' % flow_vs_loop()
     elif n == "branch":
-        net = '<div class="net">%s</div>' % branch_svg()
+        _bl = {k: v for k, v in (c.get("net_labels") or {}).items()
+               if k in ("q", "left", "right")}
+        net = '<div class="net">%s</div>' % branch_svg(**_bl)
     elif isinstance(n, dict):
         net = '<div class="net">%s</div>' % agent_network(**n)
     elif n:

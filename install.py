@@ -72,18 +72,39 @@ def main():
     else:
         print(f"[✓] 虚拟环境已存在: {VENV}")
 
-    if platform.system() == "Windows":
-        pip = VENV / "Scripts" / "pip.exe"
-        python = VENV / "Scripts" / "python.exe"
-    else:
-        pip = VENV / "bin" / "pip"
-        python = VENV / "bin" / "python"
+    python = VENV / ("Scripts" if platform.system() == "Windows" else "bin") / (
+        "python.exe" if platform.system() == "Windows" else "python")
+
+    if not python.exists():
+        print(f"[!] 未找到 {python}，虚拟环境可能创建失败，请删除 {VENV} 后重试")
+        sys.exit(1)
 
     # 3. 升级 pip 并安装依赖
+    #
+    # 这里统一用 `venv 里的 python -m pip`，不用 pip.exe，原因有两条：
+    #   1) Windows 上 pip.exe 给自己升级会撞上 pip 的内置保护。pip 源码里
+    #      misc.py::protect_pip_from_modification_on_windows 会在
+    #      「argv[0] 是 pip/pip3/pip3.x」且操作是修改 pip 时直接抛错：
+    #      ERROR: To modify pip, please run the following command: ... python.exe -m pip ...
+    #      退出码 1，再叠加下面的 check=True，整个安装就此中断。
+    #   2) `sys.executable` 也不可靠：用户直接用系统 Python 执行 install.py 时，
+    #      它指向系统解释器，装出来的包落在宿主机环境，venv 里照样没有 Pillow，
+    #      第 5 步的 import 校验必然失败。
+    # 用 venv 的 python 显式调 -m pip，两个坑一起避开，也不依赖用户是否激活了 venv。
+    print("[→] 检查 venv 内的 pip...")
+    if subprocess.run([str(python), "-m", "pip", "--version"],
+                      capture_output=True).returncode != 0:
+        print("[→] venv 内没有 pip（部分 Linux 发行版不自带），执行 ensurepip")
+        run([str(python), "-m", "ensurepip", "--upgrade"])
+
     print("[→] 安装依赖...")
-    run([str(pip), "install", "--upgrade", "pip"])
+    try:
+        run([str(python), "-m", "pip", "install", "--upgrade", "pip"])
+    except subprocess.CalledProcessError:
+        print("[!] pip 自身升级失败，通常不影响使用，继续安装依赖")
+
     if REQUIREMENTS.exists():
-        run([str(pip), "install", "-r", str(REQUIREMENTS)])
+        run([str(python), "-m", "pip", "install", "-r", str(REQUIREMENTS)])
     else:
         print(f"[!] 未找到 {REQUIREMENTS}，跳过依赖安装")
 

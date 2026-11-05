@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.0.3 (2026-11-05)
+
+### 修复
+
+- **Windows 上 `install.py` 会在装依赖之前中断**（GitHub 用户反馈，本机已复现）。原写法是 `pip.exe install --upgrade pip`，pip 内置的 `protect_pip_from_modification_on_windows()` 会判定「用 pip.exe 改 pip 自己」，先下载完新版本再抛错：
+
+  ```
+  ERROR: To modify pip, please run the following command:
+  ...\.venv\Scripts\python.exe -m pip install --upgrade pip
+  ```
+
+  退出码 1，叠加脚本里的 `subprocess.run(check=True)`，整个安装在装依赖之前就带 traceback 退出。现在统一调 venv 内的 `python -m pip`，绕开 pip.exe 的文件占用。
+
+- **顺带修掉社区建议写法里的一个坑**：把 `pip.exe` 换成 `sys.executable` 只在「已激活 venv」时正确。用户直接用系统 Python 执行 `install.py` 时，`sys.executable` 指向系统解释器，依赖会装进宿主机环境，venv 里仍然没有 Pillow，第 5 步 `import screenshot_v2` 必然 `ModuleNotFoundError`。现在显式使用 `VENV/Scripts/python.exe`，与是否激活 venv 无关。
+
+- **pip 自身升级改为失败不阻断**：内网、代理或镜像源下升级 pip 经常失败，但不影响装依赖，不该因此中断整个安装。
+
+### 新增
+
+- venv 内缺 pip 时自动执行 `python -m ensurepip --upgrade`（部分 Linux 发行版的 `python -m venv` 不自带 pip）。
+- venv 创建失败时给出可操作的提示（建议删除 `.venv` 后重试），不再直接抛异常栈。
+
+## 2.0.2 (2026-10-30)
+
+### 修复
+
+- **`compare` / `chain` 页型内容不足时被拉散**：两者原用 `justify-content: space-between` 把条目均匀铺满整页，条目少时上半页和下半页各留一大块空白、中间条目彼此相距 150px 以上（实测一页三条观点时最明显）。改为内容整体居中 + 固定间距：`compare` 用 `center` + `gap:52px`，`chain` 用 `center` + 每步 `padding:44px 0`（连接竖线保持连续）。内容多时仍然自然撑满，不再散架。
+- 新增经验：`compare` 页型适合「每侧 4 条以上」或每条说明有 2 行的场景；条目再少建议改用 `flow` 的双窗口拼法，页面更饱满。
+
+## 2.0.1 (2026-10-16)
+
+### 修复
+
+- **封面 `net: "branch"` 示意图的标签原本写死**：固定显示「同一个输入 / TEXT OUT / DECISION」，跨主题复用时会与内容语义对不上（实测做「逆向工具」主题封面时明显跑偏）。新增 `net_labels: {q, left, right}` 覆盖这三处文案，不传则保持默认值，向后兼容。
+- 顶部问题条宽度改为随文字长度自适应（`max(400, len*26+80)`），短标题不再显得空、长标题不溢出。
+
 ## 2.0.0 (2026-09-18)
 
 ### 破坏性变更：移除 v1 模式，单轨化「晚秋简约」引擎

@@ -10,7 +10,7 @@ description: >
   文案生成信息图、小红书配图、名词科普配图、infographic generator、screenshot tutorial、
   feature guide image、text to infographic。
 agent_created: true
-version: 2.0.0
+version: 2.0.3
 ---
 
 # 截图教程图生成器 (Screenshot Tutorial Generator)
@@ -51,7 +51,7 @@ version: 2.0.0
 
 | type | 用途 | 关键字段 |
 |---|---|---|
-| `cover` | 封面（SVG 示意图 + 大标题） | `title_lines` / `subtitle` / `net` / `title_size` / `sum` / `note` / `date` / `total` |
+| `cover` | 封面（SVG 示意图 + 大标题） | `title_lines` / `subtitle` / `net` / `net_labels` / `title_size` / `sum` / `note` / `date` / `total` |
 | `stats` | 大数字页 | `items: [[大数字, 单位, 标签, 注释], ...]`（四元组） |
 | `chain` | 竖向因果链 | `steps: [[标题, 说明, 补充], ...]`（数组，非字典） |
 | `timeline` | 纵向时间线 | `nodes: [{dt, tt, ds, key}]`（注意是 `nodes` 不是 `events`；`key: true` 高亮节点） |
@@ -60,7 +60,7 @@ version: 2.0.0
 | `takeaway` | 收尾判断页 | `highlight`（金句）/ `paras`（段落列表）/ `limit: [小标题, 一段话]` |
 | `flow` | 窗口流程对比（见下） | 见下 |
 
-**cover 补充**：`net` 控制封面 SVG 示意图——`"flow"`（固定路径 vs 自主循环）、`"branch"`（一个输入分叉成两种输出）、`false`（不画）；`title_size` 可在标题较长时降字号（默认 94px，长标题建议 72px 且每行 ≤11 字）；`sum` 为封面要点卡（`[{h, t, d}, ...]`）。
+**cover 补充**：`net` 控制封面 SVG 示意图——`"flow"`（固定路径 vs 自主循环）、`"branch"`（一个输入分叉成两种输出，默认文案「同一个输入 / TEXT OUT / DECISION」）、`false`（不画）；`net_labels: {q, left, right}` 可覆盖 branch 图的这三处文案，跨主题复用时**必须**改（例：`{"q": "一句提问", "left": "EXPLAIN", "right": "REBUILD"}`）；`title_size` 可在标题较长时降字号（默认 94px，长标题建议 72px 且每行 ≤11 字）；`sum` 为封面要点卡（`[{h, t, d}, ...]`）。
 
 #### `flow` 页（终端窗口 + 连接线 + 概率条 + 选项块）
 
